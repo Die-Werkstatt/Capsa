@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capsa</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: blueprint box with contents. Wireframe box on a perspective grid; your assets rise out of it and circle it, the box comes apart into labelled parts during the features, then everything goes back in and the lid closes at download. Dark only, by choice. */
+:root {
+  --ground: #050609;
+  --deep: #020203;
+  --near: #0C1017;
+  --line: #2A3442;
+  --ink: #EDEDED;
+  --muted: #8A95A5;
+  --lid: #4F8CFF;
+  --display: "Michroma", "Eurostile", "Arial Black", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body { background: var(--deep) radial-gradient(130% 95% at 50% 100%, var(--near) 0%, var(--ground) 45%, var(--deep) 100%) fixed; color: var(--ink); font: 400 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; }
+a:focus-visible { outline: 2px solid var(--lid); outline-offset: 3px; }
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+#labels { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.tag { position: absolute; font: 400 11px var(--mono); color: var(--muted); white-space: nowrap; transform: translate(14px, -50%); transition: opacity .2s; }
+.tag::before { content: ""; position: absolute; left: -14px; top: 50%; width: 10px; border-top: 1px solid var(--muted); }
+.tag b { color: var(--lid); font-weight: 400; }
+.wrap { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+@media (max-width: 600px) { .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } }
+
+header { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 5; background: linear-gradient(var(--deep) 40%, transparent); }
+header .wrap { display: flex; justify-content: space-between; align-items: center; height: 72px; }
+.lockup { height: 15px; width: auto; color: var(--ink); }
+.pill { font: 500 14px/1 var(--body); text-decoration: none; padding: 10px 16px; border: 1px solid var(--line); background: var(--ground); }
+.pill:hover { border-color: var(--lid); }
+.src { font: 400 14px/1 var(--body); color: var(--muted); text-decoration: none; padding: 8px 0; transition: color .2s; }
+.src:hover { color: var(--ink); }
+
+.hero { min-height: 640px; height: 92vh; max-height: 980px; display: flex; flex-direction: column; justify-content: flex-end; padding-block: 0 72px; }
+.hero h1 { font: 400 clamp(32px, 6vw, 76px)/1.1 var(--display); margin: 0; max-width: 16ch; }
+.swap { color: var(--lid); white-space: nowrap; }
+.hero-row { display: flex; flex-direction: column; align-items: flex-start; gap: 28px; margin-top: 28px; }
+.hero p { color: var(--muted); font-size: 18px; max-width: 46ch; margin: 0; }
+.cta { display: inline-flex; align-items: center; gap: 14px; padding: 16px 24px; background: var(--ink); color: var(--ground); text-decoration: none; font-weight: 500; }
+.cta:hover { background: var(--lid); color: var(--ink); }
+.cta, .pill { transition: transform .55s cubic-bezier(.25, 1.25, .5, 1), background .15s, color .15s, border-color .15s; }
+.cta:active, .pill:active { transform: scale(.985); transition-duration: .08s; }
+
+section { padding-block: 120px; }
+h2 { font: 400 clamp(22px, 3vw, 36px)/1.25 var(--display); margin: 0 0 48px; max-width: 22ch; text-wrap: balance; }
+.spec { display: grid; grid-template-columns: max-content max-content; gap: 0 64px; }
+.spec .item p { white-space: nowrap; }
+@media (max-width: 880px) { .spec { grid-template-columns: 1fr; max-width: none; } }
+.item { position: relative; padding-block: 18px 22px; text-shadow: 0 0 12px var(--deep), 0 0 24px var(--deep); }
+.item h3 { font: 500 18px var(--body); margin: 0 0 4px; }
+.item h3 span { font: 400 11px var(--mono); color: var(--lid); }
+.item p { color: var(--muted); margin: 0; font-size: 15px; }
+.item code { display: block; margin-top: 12px; font: 400 12px/1.7 var(--mono); color: var(--ink); overflow-x: auto; }
+
+.dl { border: 1px solid var(--line); background: rgba(8, 11, 16, .82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: clamp(28px, 6vw, 64px); display: grid; grid-template-columns: 1fr; gap: 32px; justify-items: start; position: relative; max-width: 480px; }
+.dl::before, .dl::after { content: ""; position: absolute; width: 12px; height: 12px; border: 1px solid var(--lid); }
+.dl::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.dl::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+@media (max-width: 760px) { .dl { grid-template-columns: 1fr; } }
+.dl h2 { margin-bottom: 16px; }
+.dl p { color: var(--muted); margin: 0; max-width: 46ch; }
+.meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 24px; margin: 0; font: 400 13px var(--mono); }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.side-links { display: flex; flex-direction: column; gap: 12px; }
+.side-links .sub { text-align: center; color: var(--muted); font-size: 14px; }
+footer { position: relative; z-index: 1; padding-block: 40px; color: var(--muted); font: 400 12px var(--mono); }
+/* Section reveals: only hidden once the script has added .js-anim, so the page still reads without it. */
+.item::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--line); transform-origin: left; transition: transform 1s cubic-bezier(.2, .7, .2, 1); transition-delay: calc(var(--i, 0) * 90ms + 100ms); }
+.js-anim .item:not(.in)::before { transform: scaleX(0); }
+.js-anim [data-reveal] { opacity: 0; transform: translateY(22px); filter: blur(6px); transition: opacity .9s cubic-bezier(.2, .7, .2, 1), transform .9s cubic-bezier(.2, .7, .2, 1), filter .9s cubic-bezier(.2, .7, .2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+.js-anim [data-reveal].in { opacity: 1; transform: none; filter: none; }
+.js-anim .dl[data-reveal] { transform: translateY(22px) scale(.985); }
+.js-anim .dl[data-reveal].in { transform: none; }
+@media (prefers-reduced-motion: reduce) { .js-anim [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; } .js-anim .item:not(.in)::before { transform: none; } }
+</style>
+</head>
+<body>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+<header><div class="wrap">
+  <svg class="lockup" viewBox="0 0 292 50" role="img" aria-label="Capsa"><g fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="miter" stroke-linecap="butt"><rect width="50" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V45H22M28 45H45V16"/><g transform="translate(68 0)"><path d="M40 5H5V45H40"/><g transform="translate(46 0)"><rect width="40" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V50M35 16V50M5 27H35"/></g><g transform="translate(92 0)"><path d="M5 50V5H35V27H5"/></g><g transform="translate(138 0)"><path d="M40 5H5V27H35V45H0"/></g><g transform="translate(184 0)"><rect width="40" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V50M35 16V50M5 27H35"/></g></g></g></svg>
+  <a class="src" href="https://github.com/sandrogekeler/Capsa">Source</a>
+</div></header>
+
+<main>
+  <div class="wrap hero">
+    <h1>Stash the<br><span class="swap" id="swap">models</span></h1>
+    <div class="hero-row">
+      <p>Index your library and send it to Houdini.</p>
+      <a class="cta" href="#download">Download for Windows</a>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>What's inside.</h2>
+      <div class="spec">
+        <div class="item"><h3>Index</h3><p>Reads your folders regardless of structure.</p></div>
+        <div class="item"><h3>Search</h3><p>By name, tag, path and type.</p></div>
+        <div class="item"><h3>Inspect</h3><p>USD layers, variants and materials.</p></div>
+        <div class="item"><h3>Texture sets</h3><p>Maps grouped into one material.</p></div>
+        <div class="item"><h3>Houdini import</h3><p>One node for LOPs and SOPs.</p></div>
+        <div class="item"><h3>File Warnings</h3><p>Missing files in one list.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="wrap">
+      <div class="dl">
+        <div>
+          <h2>Download</h2>
+          <dl class="meta"><dt>System</dt><dd>Windows 10 or 11</dd><dt>Houdini</dt><dd>20.5 or later</dd></dl>
+        </div>
+        <div><a class="cta" href="https://github.com/sandrogekeler/Capsa">Download for Windows</a></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">capsa · 1u = stroke · g = 0.6u</div></footer>
+
+<script>
+// Reveal each section's elements in a short stagger as they scroll into view.
+(() => {
+  if (!("IntersectionObserver" in window)) return;
+  const groups = [
+    [".hero h1", ".hero-row p", ".hero-row .cta"],
+    ["#features h2", "#features .item"],
+    [".dl", ".dl h2", ".dl .meta", ".dl .cta"]
+  ];
+  document.documentElement.classList.add("js-anim");
+  groups.forEach(g => {
+    let i = 0;
+    g.forEach(sel => document.querySelectorAll(sel).forEach(el => { el.setAttribute("data-reveal", ""); el.style.setProperty("--i", i++); }));
+  });
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    io.unobserve(el);
+    setTimeout(() => el.classList.add("in"), el.closest(".hero") ? 250 : 0);
+    // Hand the element back to its own styles (e.g. the bouncy button press) once it has arrived.
+    const done = ev => { if (ev.target !== el || ev.propertyName !== "opacity") return; el.removeAttribute("data-reveal"); el.removeEventListener("transitionend", done); };
+    el.addEventListener("transitionend", done);
+  }), { rootMargin: "0px 0px -12% 0px", threshold: 0.1 });
+  document.querySelectorAll("[data-reveal], .item").forEach(el => io.observe(el));
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Title: the word decodes from random glyphs, like a readout settling.
+  const words = ["models", "textures", "HDRIs", "stages", "caches"];
+  const glyphs = "▯▮░▒01/\\_-=+";
+  const el = document.getElementById("swap");
+  let wi = 0;
+  function decode(target) {
+    let f = 0; const n = 14;
+    const id = setInterval(() => {
+      f++;
+      el.textContent = [...target].map((c, i) => (i < (f / n) * target.length) ? c : glyphs[(Math.random() * glyphs.length) | 0]).join("");
+      if (f >= n) { clearInterval(id); el.textContent = target; }
+    }, 40);
+  }
+  if (!reduce) setInterval(() => { wi = (wi + 1) % words.length; decode(words[wi]); }, 4000);
+
+  if (!window.THREE) return;
+  const canvas = document.getElementById("stage");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x030405, 6, 17);   // lit near the viewer, falling off into the dark
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  camera.position.set(0, 0.8, 9);
+
+  const grid = new THREE.GridHelper(40, 80, 0x2a3442, 0x161c25);
+  grid.position.y = -1.6;
+  // Fade the grid out by distance from the camera so its far edge is never visible.
+  grid.material = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, vertexColors: true,
+    uniforms: { near: { value: 9.0 }, far: { value: 19.0 } },
+    vertexShader: "varying vec3 vC; varying float vD; void main() { vC = color; vec4 mv = modelViewMatrix * vec4(position, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }",
+    fragmentShader: "uniform float near; uniform float far; varying vec3 vC; varying float vD; void main() { float a = 1.0 - smoothstep(near, far, vD); gl_FragColor = vec4(vC, a * a); }"
+  });
+  scene.add(grid);
+
+  // The mark on its 5u grid, as outlines with faint faces.
+  const u = 0.32, D = 5 * u;
+  // Box edges: a line shader with a bright band that sweeps across the box every few seconds.
+  const glowMat = color => new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: { base: { value: new THREE.Color(color) }, opacity: { value: 0 }, sweep: { value: 99 }, origin: { value: new THREE.Vector3() }, dir: { value: new THREE.Vector3(1, 0, 0) }, width: { value: 0.16 } },
+    vertexShader: "uniform vec3 origin; uniform vec3 dir; varying float vS; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vS = dot(w.xyz - origin, dir); gl_Position = projectionMatrix * viewMatrix * w; }",
+    fragmentShader: "uniform vec3 base; uniform float opacity; uniform float sweep; uniform float width; varying float vS; void main() { float d = (vS - sweep) / width; float g = exp(-d * d); vec3 c = mix(base, vec3(0.36, 0.62, 1.0), g * 0.65); gl_FragColor = vec4(c, clamp(opacity * (1.0 + g * 0.3), 0.0, 1.0)); }"
+  });
+  const box = new THREE.Group();
+  const parts = [];
+  function part(w, h, x, y, color, faceOpacity, dir, label) {
+    const g = new THREE.BoxGeometry(w * u, h * u, D);
+    const m = new THREE.Group();
+    m.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: faceOpacity, depthWrite: false })));
+    const eg = new THREE.EdgesGeometry(g), lm = glowMat(color);
+    m.add(new THREE.LineSegments(eg, lm));
+    // Outer glow: faint additive copies just outside and inside the edges, lit only while the band passes.
+    const halo = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: lm.uniforms,
+      vertexShader: lm.vertexShader,
+      fragmentShader: "uniform float opacity; uniform float sweep; uniform float width; varying float vS; void main() { float d = (vS - sweep) / (width * 1.4); float g = exp(-d * d); gl_FragColor = vec4(vec3(0.31, 0.55, 1.0) * g * 0.28 * opacity, 1.0); }"
+    });
+    [1.035, 1.018, 0.982, 0.965].forEach(s => { const h = new THREE.LineSegments(eg, halo); h.scale.setScalar(s); m.add(h); });
+    m.children[0].material.opacity = 0;
+    m.position.set(x * u, y * u, 0);
+    m.userData = { home: m.position.clone(), dir: new THREE.Vector3(...dir), label, faceOp: faceOpacity };
+    box.add(m); parts.push(m);
+    return m;
+  }
+  part(1, 3.4, -2, -0.8, 0xc9d3e0, 0.04, [-1.1, 0.1, 0], "Wall · 1u");
+  part(1, 3.4, 2, -0.8, 0xc9d3e0, 0.04, [1.1, 0.1, 0], null);
+  part(2.2, 1, -1.4, -2, 0xc9d3e0, 0.04, [-0.5, -0.9, 0], "Base");
+  part(2.2, 1, 1.4, -2, 0xc9d3e0, 0.04, [0.5, -0.9, 0], null);
+  const lid = part(5, 1, 0, 2, 0x4f8cff, 0.22, [0, 1.0, 0], "<b>Lid</b> · 5u × 1u");
+  box.rotation.set(0.38, -0.6, 0);
+  scene.add(box);
+
+  const cutAnchor = new THREE.Object3D(); cutAnchor.position.set(0, -2 * u, D / 2); box.add(cutAnchor);
+
+  // Contents: five kinds of asset, drawn in lines like the box. Index matches the title words.
+  const dim = 0x8a95a5, blue = 0x4f8cff;
+  const lineMat = () => new THREE.LineBasicMaterial({ color: dim, transparent: true, opacity: 0.9 });
+  const edges = g => new THREE.LineSegments(new THREE.EdgesGeometry(g), lineMat());
+  const makers = [
+    () => edges(new THREE.DodecahedronGeometry(0.16)),                                       // model
+    () => { const g = new THREE.Group(); g.add(edges(new THREE.PlaneGeometry(0.26, 0.26)));   // texture: square tile with a UV grid
+            const pts = []; [-1, 1].forEach(k => { const o = k * 0.0433; pts.push(new THREE.Vector3(o, -0.13, 0), new THREE.Vector3(o, 0.13, 0), new THREE.Vector3(-0.13, o, 0), new THREE.Vector3(0.13, o, 0)); });
+            g.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), lineMat())); return g; },
+    () => { const g = new THREE.Group(); g.add(edges(new THREE.PlaneGeometry(0.42, 0.24)));   // HDRI: card with horizon
+            const h = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-0.21, -0.02, 0), new THREE.Vector3(0.21, -0.02, 0)]);
+            g.add(new THREE.Line(h, lineMat())); return g; },
+    () => { const g = new THREE.Group(); [0, 1, 2].forEach(j => { const s = edges(new THREE.BoxGeometry(0.32, 0.03, 0.22)); s.position.y = j * 0.07; g.add(s); }); return g; }, // USD layers
+    () => { const g = new THREE.Group(); for (let j = 0; j < 6; j++) { const s = edges(new THREE.BoxGeometry(0.06, 0.06, 0.06)); s.position.set(Math.cos(j) * 0.11, Math.sin(j * 2.3) * 0.09, Math.sin(j) * 0.11); g.add(s); } return g; } // cache
+  ];
+  // Soft round glow texture for the highlighted assets.
+  // Gaussian falloff that reaches zero well inside the texture, so the glow never shows an edge.
+  const glowTex = (() => { const S = 256, c = document.createElement("canvas"); c.width = c.height = S; const g = c.getContext("2d");
+    const r = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    for (let i = 0; i <= 16; i++) { const x = i / 16; r.addColorStop(x, `rgba(255,255,255,${(Math.exp(-x * x * 7) - Math.exp(-7)).toFixed(4)})`); }
+    g.fillStyle = r; g.fillRect(0, 0, S, S); return new THREE.CanvasTexture(c); })();
+  const items = [], N = 20;
+  for (let n = 0; n < N; n++) {
+    const kind = n % 5, m = makers[kind]();
+    m.userData = { kind, a: (n / N) * Math.PI * 2, r: 1.7 + (n % 3) * 0.32, h: Math.sin(n * 1.7) * 0.45 - 0.35, spin: 0.3 + (n % 4) * 0.15, s: 1,
+                   inner: new THREE.Vector3(((n % 5) - 2) * 0.2, -0.45 + ((n / 5) | 0) * 0.05, ((n % 3) - 1) * 0.15), delay: (n / N) * 1.4 };
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x4f8cff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+    glow.scale.setScalar(1.4); m.add(glow); m.userData.glow = glow;
+    box.add(m); items.push(m);
+  }
+  const setColor = (m, c, o) => m.traverse(x => { if (x.material && !x.isSprite) { x.material.color.setHex(c); x.material.opacity = o; } });
+
+  const labelLayer = document.getElementById("labels");
+  const tags = parts.filter(p => p.userData.label).map(p => ({ obj: p, el: labelLayer.appendChild(Object.assign(document.createElement("div"), { className: "tag", innerHTML: p.userData.label })) }));
+  tags.push({ obj: cutAnchor, el: labelLayer.appendChild(Object.assign(document.createElement("div"), { className: "tag", textContent: "Cut · 0.6u" })) });
+
+  // Interaction: no cursor following. A fast swipe through a piece knocks it aside and it springs back;
+  // a click on a piece squashes it slightly with a bounce.
+  const bodies = parts.concat(items);
+  bodies.forEach((b, i) => Object.assign(b.userData, { off: new THREE.Vector3(), vel: new THREE.Vector3(), sq: 0, sqv: 0, sx: -1e4, sy: -1e4, pick: i < parts.length ? 36 : 22 }));
+  const camRight = new THREE.Vector3(), camUp = new THREE.Vector3();
+  let last = null;
+  function segDist(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy || 1;
+    const k = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l));
+    return Math.hypot(px - ax - k * dx, py - ay - k * dy);
+  }
+  addEventListener("pointermove", e => {
+    const now = performance.now();
+    if (last && !reduce) {
+      const dt = Math.max(1, now - last.t), dx = e.clientX - last.x, dy = e.clientY - last.y;
+      const speed = Math.hypot(dx, dy) / dt;                 // px per ms
+      if (speed > 3.2) {                                      // only a really quick pass counts
+        camRight.setFromMatrixColumn(camera.matrixWorld, 0); camUp.setFromMatrixColumn(camera.matrixWorld, 1);
+        const n = Math.hypot(dx, dy);
+        bodies.forEach(b => {
+          const d = b.userData;
+          if (segDist(d.sx, d.sy, last.x, last.y, e.clientX, e.clientY) < d.pick) {
+            const f = Math.min(0.0045, 0.001 * (speed - 3.2) + 0.0015);
+            d.vel.addScaledVector(camRight, (dx / n) * f).addScaledVector(camUp, (-dy / n) * f);
+          }
+        });
+      }
+    }
+    last = { x: e.clientX, y: e.clientY, t: now };
+  }, { passive: true });
+  // Clicks are read from the whole window, so text and panels on top never block the box.
+  // Box parts are hit-tested against their actual faces; small assets by distance on screen.
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  addEventListener("pointerdown", e => {
+    ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    let best = null, bd = Infinity;
+    items.forEach(b => { const d = Math.hypot(b.userData.sx - e.clientX, b.userData.sy - e.clientY); if (d < 28 && d < bd) { bd = d; best = b; } });
+    if (!best) {
+      const hit = ray.intersectObjects(parts.map(p => p.children[0]), false)[0];
+      if (hit) best = hit.object.parent;
+    }
+    if (best) best.userData.sqv -= 0.0075;
+  }, { capture: true });
+  const invQ = new THREE.Quaternion(), local = new THREE.Vector3();
+  function physics(b) {
+    const d = b.userData;
+    d.vel.addScaledVector(d.off, -0.035).multiplyScalar(0.9);   // soft spring home, slow and lightly underdamped
+    d.off.add(d.vel);
+    d.sqv += -0.07 * d.sq; d.sqv *= 0.88; d.sq += d.sqv;
+    invQ.copy(box.quaternion).invert();
+    local.copy(d.off).applyQuaternion(invQ).divideScalar(box.scale.x);
+    b.position.add(local);
+    b.getWorldPosition(v).project(camera);
+    d.sx = (v.x + 1) / 2 * innerWidth; d.sy = (1 - v.y) / 2 * innerHeight;
+  }
+  let wide = true, boxBase = 0.9, first = true;
+  function size() {
+    const w = innerWidth, h = innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    wide = w > 820;
+    boxBase = wide ? 0.9 : 0.55;
+    box.scale.setScalar(boxBase);
+  }
+  addEventListener("resize", size); size();
+
+  const v = new THREE.Vector3(), pos = new THREE.Vector3();
+  const clock = new THREE.Clock();
+  const clamp = x => Math.min(1, Math.max(0, x));
+  let ease = 0, lidE = 0, outE = 1;
+  let lastY = scrollY, sv = 0, sway = 0, swayV = 0, gridZ = 0;
+  let rotYE = -0.6 + Math.min(1, scrollY / Math.max(1, document.documentElement.scrollHeight - innerHeight)) * Math.PI * 2;
+  function frame() {
+    const t = clock.getElapsedTime();
+    const docH = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    const p = scrollY / docH;
+    const target = Math.sin(Math.min(1, p * 1.35) * Math.PI);      // apart mid-page, together at the end
+    const back = clamp((p - 0.7) / 0.18);                           // contents go back in
+    const lidGoal = clamp((p - 0.6) / 0.1) * (1 - clamp((p - 0.82) / 0.12)); // closed at the start; lifts to let the contents back in, then closes
+    ease += (target - ease) * 0.08;
+    lidE += (lidGoal - lidE) * 0.08;
+    outE += ((1 - back) - outE) * 0.06;
+
+    parts.forEach(m => {
+      const k = m === lid ? Math.max(ease * 1.1, lidE * 0.75) : ease * 1.1;
+      m.position.copy(m.userData.home).addScaledVector(m.userData.dir, k);
+      physics(m);
+      m.scale.setScalar(1 + m.userData.sq);
+    });
+    const tx = wide ? (p > 0.15 && p < 0.75 ? 2.6 : 2.35) : 0;
+    const ty = (wide ? 0.6 : 2.0) - p * (wide ? 0.6 : 1.0);
+    if (first) { box.position.set(tx, ty, 0); first = false; }   // start where it belongs, no drift from the centre
+    box.position.x += (tx - box.position.x) * 0.06;
+    box.position.y += (ty - box.position.y) * 0.08;
+
+    // Glow sweep: a quick pass of light across the lid's edges every 6 to 9 seconds.
+    // Each piece gets its own pass, at its own random time and in a random direction.
+    parts.forEach((m, i) => {
+      const d = m.userData, U = m.children[1].material.uniforms;
+      if (d.nextGlow === undefined) d.nextGlow = 2 + Math.random() * 7;
+      if (!reduce && m === lid && t > d.nextGlow) {   // only the lid glows
+        d.glowStart = t; d.nextGlow = t + 6 + Math.random() * 3;
+        U.dir.value.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+      }
+      const st = (t - (d.glowStart ?? -10)) / 0.45;
+      U.sweep.value = st >= 0 && st <= 1 ? (-0.9 + st * 1.8) * box.scale.x : 99;
+      m.getWorldPosition(U.origin.value);
+    });
+
+    // Intro: the box fades and grows in place, then the lid lifts and the assets rise out.
+    const intro = reduce ? 1 : clamp(t / 1.1), ie = 1 - Math.pow(1 - intro, 3);
+    box.scale.setScalar(boxBase * (0.92 + 0.08 * ie));
+    parts.forEach(m => { m.children[0].material.opacity = m.userData.faceOp * ie; m.children[1].material.uniforms.opacity.value = ie; });
+    // Sway: fast scrolling tips the box toward the scroll direction; a soft spring brings it back.
+    const dy = scrollY - lastY; lastY = scrollY;
+    sv += (dy - sv) * 0.2;
+    const swayGoal = reduce ? 0 : Math.max(-1, Math.min(1, sv / 90));
+    swayV += (swayGoal - sway) * 0.04; swayV *= 0.86; sway += swayV;
+    box.rotation.z = -sway * 0.05;
+    box.position.y -= sway * 0.006;   // the lerp above turns this into a small steady dip
+    // One full turn in a single direction over the page, eased so it settles instead of tracking the wheel 1:1.
+    rotYE += ((-0.6 + Math.min(1, p) * Math.PI * 2) - rotYE) * 0.05;
+    box.rotation.y = rotYE + (reduce ? 0 : Math.sin(t * 0.35) * 0.06);
+    box.rotation.x = 0.38 + sway * 0.12;
+    // Grid drifts toward the viewer; scrolling adds a little speed, up to about double.
+    if (!reduce) { gridZ = (gridZ + 0.0025 + Math.min(Math.abs(sv), 80) * 0.00003) % 0.5; grid.position.z = gridZ; }
+
+    // Contents rise out of the box one after another, circle it, and return at the end.
+    const orbit = reduce ? 0 : t * 0.09;
+    items.forEach((m, n) => {
+      const d = m.userData;
+      const rise = reduce ? 1 : clamp((t - 0.3 - d.delay * 0.6) / 0.9);   // fade in where they float, one after another
+      const k = outE * outE * (3 - 2 * outE);                        // 0 inside, 1 out in orbit
+      const a = d.a + orbit;
+      const r = d.r * (1 + ease * 0.35);
+      pos.set(Math.cos(a) * r, d.h + ease * 0.4 * Math.sin(n) + Math.sin(t * 0.8 + n) * 0.05, Math.sin(a) * r * 0.55);
+      // path: up through the open lid first, then out to the ring
+      const up = d.inner.clone(); up.y = 2.4 * u;
+      if (k < 0.35) m.position.copy(d.inner).lerp(up, k / 0.35);
+      else m.position.copy(up).lerp(pos, (k - 0.35) / 0.65);
+      const hot = d.kind === wi;
+      d.s += ((hot ? 1.3 : 1) * (0.5 + 0.5 * k) - d.s) * 0.1;
+      physics(m);
+      m.scale.setScalar(d.s * (1 + d.sq));
+      setColor(m, hot ? blue : dim, (0.25 + 0.75 * k) * ie * rise);
+      const gm = d.glow.material;
+      gm.opacity += ((hot ? 0.12 * k * ie * rise : 0) - gm.opacity) * 0.05;   // soft glow fades in and out with the highlight
+      m.rotation.y = t * d.spin; m.rotation.x = t * d.spin * 0.6;
+    });
+    renderer.render(scene, camera);
+
+    const show = wide && ease > 0.35;
+    tags.forEach(({ obj, el }) => {
+      obj.getWorldPosition(v).project(camera);
+      el.style.left = ((v.x + 1) / 2 * innerWidth) + "px";
+      el.style.top = ((1 - v.y) / 2 * innerHeight) + "px";
+      el.style.opacity = show ? Math.min(1, (ease - 0.35) * 3) : 0;
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>
