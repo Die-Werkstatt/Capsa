@@ -22,3 +22,5 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+# Locked template files: formatting them here would conflict with the next template update.
+extend-exclude = [".claude", ".github/scripts"]

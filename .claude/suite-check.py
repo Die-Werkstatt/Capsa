@@ -57,7 +57,8 @@ def load_sibling(stem):
 probe = load_sibling("suite-probe")
 if probe is None:
     print(
-        "suite-probe.py is not vendored beside this file — re-run kollektiv/scripts/sync-runner.sh",
+        "suite-probe.py is not vendored beside this file — re-run"
+        " kollektiv/scripts/sync-runner.sh",
         file=sys.stderr,
     )
     raise SystemExit(2)
@@ -119,7 +120,9 @@ def run_commands(root, entries):
         cwd = os.path.join(root, entry["cwd"]) if entry.get("cwd") else root
 
         if not os.path.isdir(cwd):
-            results.append(Result("commands", name, SKIP, f"cwd {entry['cwd']!r} does not exist"))
+            results.append(
+                Result("commands", name, SKIP, f"cwd {entry['cwd']!r} does not exist")
+            )
             continue
         ok, reason = runnable(run, cwd, root, shell)
         if not ok:
@@ -142,7 +145,9 @@ def run_commands(root, entries):
             else:
                 output = (proc.stdout + proc.stderr).strip().splitlines()
                 results.append(
-                    Result("commands", name, FAIL, f"exit {proc.returncode}", output[-20:])
+                    Result(
+                        "commands", name, FAIL, f"exit {proc.returncode}", output[-20:]
+                    )
                 )
         else:
             results.append(Result("commands", name, PASS))
@@ -227,9 +232,16 @@ def run_invariants(root, entries):
 
         reason = ""
         if missing:
-            reason = "searched " + ", ".join(present) + "; not present: " + ", ".join(missing)
+            reason = (
+                "searched "
+                + ", ".join(present)
+                + "; not present: "
+                + ", ".join(missing)
+            )
         if unreadable:
-            reason = (reason + "; " if reason else "") + f"{unreadable} unreadable file(s)"
+            reason = (
+                reason + "; " if reason else ""
+            ) + f"{unreadable} unreadable file(s)"
 
         if matches:
             results.append(
@@ -271,7 +283,9 @@ def run_generated(root, entries, offline):
             results.append(Result("generated", name, SKIP, "offline"))
             continue
         if not os.path.isdir(cwd):
-            results.append(Result("generated", name, SKIP, f"cwd {entry['cwd']!r} does not exist"))
+            results.append(
+                Result("generated", name, SKIP, f"cwd {entry['cwd']!r} does not exist")
+            )
             continue
         ok, reason = runnable(regenerate, cwd, root, shell)
         if not ok:
@@ -289,7 +303,9 @@ def run_generated(root, entries, offline):
             results.append(Result("generated", name, SKIP, "command not found"))
             continue
         if proc.returncode != 0:
-            why = environmental_failure(regenerate, cwd, root, proc.stdout + proc.stderr)
+            why = environmental_failure(
+                regenerate, cwd, root, proc.stdout + proc.stderr
+            )
             if why:
                 results.append(Result("generated", name, SKIP, why))
             else:
@@ -341,7 +357,11 @@ def run_memory(root, config):
     name = "always-loaded memory"
     module = load_sibling("suite-memory")
     if module is None:
-        return [Result("memory", name, SKIP, "suite-memory.py is not vendored beside this file")]
+        return [
+            Result(
+                "memory", name, SKIP, "suite-memory.py is not vendored beside this file"
+            )
+        ]
     return [Result("memory", name, *module.evaluate(root, config))]
 
 
@@ -414,7 +434,11 @@ def main():
         )
     else:
         print(f"{manifest.get('product', root)} — {len(results)} check(s)\n")
-        print(render_table(results) if results else "no checks declared for these sections")
+        print(
+            render_table(results)
+            if results
+            else "no checks declared for these sections"
+        )
         details = render_details(results)
         if details:
             print(details)
