@@ -44,7 +44,8 @@ header .wrap { display: flex; justify-content: space-between; align-items: cente
 
 .hero { height: 100vh; height: 100svh; min-height: 560px; display: flex; flex-direction: column; justify-content: center; padding-block: 72px; }
 .hero h1 { font: 400 clamp(32px, 6vw, 76px)/1.1 var(--display); margin: 0; max-width: 16ch; }
-.swap { color: var(--lid); white-space: nowrap; }
+.swap { color: var(--ink); white-space: nowrap; }
+.swap i { font-style: normal; color: var(--lid); }
 .hero-row { display: flex; flex-direction: column; align-items: flex-start; gap: 28px; margin-top: 28px; }
 .hero p { color: var(--muted); font-size: 18px; max-width: 46ch; margin: 0; }
 .cta { display: inline-flex; align-items: center; gap: 14px; padding: 16px 24px; background: var(--ink); color: var(--ground); text-decoration: none; font-weight: 500; }
@@ -173,7 +174,7 @@ footer { position: relative; z-index: 1; padding-block: 40px; color: var(--muted
     let f = 0; const n = 14;
     const id = setInterval(() => {
       f++;
-      el.textContent = [...target].map((c, i) => (i < (f / n) * target.length) ? c : glyphs[(Math.random() * glyphs.length) | 0]).join("");
+      el.innerHTML = [...target].map((c, i) => (i < (f / n) * target.length) ? c : "<i>" + glyphs[(Math.random() * glyphs.length) | 0] + "</i>").join("");   // settled letters white, scrambling ones blue
       if (f >= n) { clearInterval(id); el.textContent = target; }
     }, 40);
   }
