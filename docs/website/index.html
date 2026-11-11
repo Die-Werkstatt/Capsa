@@ -42,7 +42,7 @@ header .wrap { display: flex; justify-content: space-between; align-items: cente
 .src { font: 400 14px/1 var(--body); color: var(--muted); text-decoration: none; padding: 8px 0; transition: color .2s; }
 .src:hover { color: var(--ink); }
 
-.hero { min-height: 640px; height: 92vh; max-height: 980px; display: flex; flex-direction: column; justify-content: flex-end; padding-block: 0 72px; }
+.hero { height: 100vh; height: 100svh; min-height: 560px; display: flex; flex-direction: column; justify-content: center; padding-block: 72px; }
 .hero h1 { font: 400 clamp(32px, 6vw, 76px)/1.1 var(--display); margin: 0; max-width: 16ch; }
 .swap { color: var(--lid); white-space: nowrap; }
 .hero-row { display: flex; flex-direction: column; align-items: flex-start; gap: 28px; margin-top: 28px; }
@@ -354,19 +354,21 @@ footer { position: relative; z-index: 1; padding-block: 40px; color: var(--muted
     const p = scrollY / docH;
     const target = Math.sin(Math.min(1, p * 1.35) * Math.PI);      // apart mid-page, together at the end
     const back = clamp((p - 0.7) / 0.18);                           // contents go back in
-    const lidGoal = clamp((p - 0.6) / 0.1) * (1 - clamp((p - 0.82) / 0.12)); // closed at the start; lifts to let the contents back in, then closes
+    const S = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+    // Lid: one smooth path. Rises with the explosion, settles partly open while the contents go back in, then closes. Never reverses.
+    const lidGoal = p < 0.37 ? 1.1 * S(p / 0.37) : 1.1 - 0.5 * S((p - 0.37) / 0.33) - 0.6 * S((p - 0.8) / 0.14);
     ease += (target - ease) * 0.08;
     lidE += (lidGoal - lidE) * 0.08;
     outE += ((1 - back) - outE) * 0.06;
 
     parts.forEach(m => {
-      const k = m === lid ? Math.max(ease * 1.1, lidE * 0.75) : ease * 1.1;
+      const k = m === lid ? lidE : ease * 1.1;
       m.position.copy(m.userData.home).addScaledVector(m.userData.dir, k);
       physics(m);
       m.scale.setScalar(1 + m.userData.sq);
     });
     const tx = wide ? (p > 0.15 && p < 0.75 ? 2.6 : 2.35) : 0;
-    const ty = (wide ? 0.6 : 2.0) - p * (wide ? 0.6 : 1.0);
+    const ty = (wide ? 0.93 : 2.0) - p * (wide ? 0.93 : 1.0);
     if (first) { box.position.set(tx, ty, 0); first = false; }   // start where it belongs, no drift from the centre
     box.position.x += (tx - box.position.x) * 0.06;
     box.position.y += (ty - box.position.y) * 0.08;
