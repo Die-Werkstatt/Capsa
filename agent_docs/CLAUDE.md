@@ -1,33 +1,62 @@
 # Capsa
 
 Asset library for VFX/3D: a personal tool for Sandro's Houdini/Solaris (USD,
-Karma) workflow that indexes existing asset folders and finds assets fast. Idea
-stage, no application code yet. The brief is `docs/BRIEF.md`.
-
-<!-- Project-owned. Seeded once from sandrogekeler/AllesSandro; rewrite freely.
-Keep it under ~200 lines: it is imported into every session by ../CLAUDE.md.
-Put rules that only matter for some files in .claude/rules/ with `paths:`
-frontmatter instead, so they load only when those files are touched. -->
+Karma) workflow that indexes existing asset folders and finds assets fast. It
+is also a learning project: Sandro must be able to explain and extend every
+part without AI. Phase 1 has started; the package holds no feature yet. The
+brief is `docs/BRIEF.md`.
 
 ## Stack
-- TODO: frameworks and versions that matter
+
+- Python 3.13, packaged with uv (`pyproject.toml`, `uv.lock`). No runtime
+  dependency yet.
+- pytest for unit tests, ruff 0.16.7 through aislop for lint.
+- Runs on Windows now and Linux later.
+- Planned, not installed: usd-core, OpenImageIO, SQLite FTS5, FastAPI, React.
+  The window is undecided (#7).
 
 ## Project structure
 
-- `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), brand, design
-  and website notes.
+- `src/capsa/`: the package.
+- `tests/`: unit tests. `tests/fixtures/` will hold real files from Sandro's
+  machine (#11); Houdini is not available in Claude's environment.
+- `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,
+  conventions, brand, design and website. `docs/learn/`: beginner
+  explanations, one page per module.
 - `agent_docs/`: these instructions, the roadmap and the dependency inventory.
 
 ## Architecture rules
 
-TODO: the few rules a change must not break (layering, IPC boundaries, where
-state lives). Short and checkable beats long and aspirational.
+- Capsa never writes, moves, renames or deletes anything inside a library
+  root. Its index, settings and thumbnail cache live in its own data folder.
+- Capsa never uses a Houdini licence: no hython, no `hou`, no Houdini
+  libraries. Code for Houdini runs only inside a session Sandro opened.
+- Capsa contains no SideFX code and never converts or re-saves Houdini files.
+- Paths go through `pathlib`. Nothing depends on one operating system.
+- Houdini, USD and file-format behaviour: when unsure, say so and propose how
+  to verify on Sandro's machine. Never guess.
+
+## Working rules
+
+- Small steps. Propose a plan before a change that touches more than one
+  module.
+- Stay inside the current phase of the brief. Ask before adding anything from
+  a later one.
+- Simple, readable code over clever code.
+- Every new module gets a `docs/learn/<module>.md` page in the same pull
+  request, and new terms go into `docs/learn/glossary.md`.
+- Every non-obvious choice gets an entry in `docs/DECISIONS.md`.
 
 ## Build & dev commands
 
 ```sh
-python3 .claude/suite-check.py   # every health check in .claude/suite.json
+uv run python3 .claude/suite-check.py   # every health check in .claude/suite.json
+uv run pytest -q                        # unit tests
 ```
+
+`uv run` puts the pinned ruff first on the path; without it the aislop check
+is skipped. CI (`.github/workflows/checks.yml`) runs the tests on Windows and
+Linux.
 
 ## Task tracking
 Work is tracked in GitHub Issues. Every issue carries a `type:`, an `area:` and

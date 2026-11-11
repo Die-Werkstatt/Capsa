@@ -1,4 +1,4 @@
-# Capsa — Project Brief
+# Capsa: Project Brief
 
 **Name:** Capsa
 **What it is:** Asset library for VFX/3D
@@ -52,7 +52,7 @@ It is also a **learning project**: the goal is not only a working tool, but for 
 
 Each phase must be usable on its own before starting the next.
 
-### Phase 1 — Index & browse (core)
+### Phase 1: Index & browse (core)
 - Library roots: point Capsa at folders; it scans them read-only and keeps watching for changes.
 - Asset detection: group files into one asset (e.g. a model plus its texture folder) instead of listing every file.
 - Supported first: USD (`.usd/.usda/.usdc/.usdz`), Alembic, FBX, OBJ, textures (EXR, TX, PNG, JPG, TIFF), HDRIs.
@@ -61,7 +61,7 @@ Each phase must be usable on its own before starting the next.
 - Tags, favourites, collections.
 - Path copy and "show in Explorer".
 
-### Phase 2 — Inspect
+### Phase 2: Inspect
 - Asset page with metadata: format, size, units, bounds, poly count, frame range.
 - USD summary: prim tree, variants, materials, references and layers it depends on.
 - Texture sets: detect PBR sets by naming (basecolor, roughness, normal…) and show them together.
@@ -69,7 +69,7 @@ Each phase must be usable on its own before starting the next.
 - HDRI preview with exposure control.
 - 3D preview in the browser for USD/glTF-convertible assets.
 
-### Phase 3 — Into Houdini
+### Phase 3: Into Houdini
 - Small Houdini Python panel (runs inside my open Houdini session) that browses Capsa and imports the selected asset into SOPs or as a USD reference in LOPs.
 - Drag and drop where Houdini allows it.
 - Thumbnails for 3D assets: render a turntable still once and cache it.
@@ -115,6 +115,8 @@ docs/
 └── ARCHITECTURE.md   # Diagram + short description of components
 ```
 
+The roadmap is `agent_docs/ROADMAP.md`.
+
 ### Rules for learning docs
 - Assume zero programming background. Use analogies from VFX where possible (e.g. "like a Houdini node network", "like a texture cache").
 - Every new module gets a `docs/learn/` page in the same session it is written.
@@ -124,7 +126,7 @@ docs/
 
 ### DECISIONS.md entry format
 ```
-## YYYY-MM-DD — Title
+## YYYY-MM-DD: Title
 **Decision:** what we chose
 **Why:** reason in plain language
 **Alternatives:** what else was possible and why not
@@ -150,7 +152,7 @@ docs/
 Settled. Logo files and rules: [`docs/brand/`](brand/README.md).
 
 - Wordmark: squared CAPSA built on a 1u grid (1u = stroke width); the top of each A is a blue lid bar.
-- Mark: the box — a C turned 90° with a cut in its base and a blue lid, 5u square, same height as the letters.
+- Mark: the box, a C turned 90° with a cut in its base and a blue lid, 5u square, same height as the letters.
 - Spacing: one gap g = 0.6u everywhere; A, P and S share one centre line at 2.7u; mark to name and clear space = 3g.
 - Dark, minimal; accent blue `#4F8CFF`. Interface, colour tokens and prototype: [`docs/design/`](design/README.md). Font still open.
 

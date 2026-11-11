@@ -1,4 +1,4 @@
-# Capsa — Website
+# Capsa: Website
 
 One-page site with a hero, features and download. Open `index.html` in a browser; there is no build step.
 

@@ -23,7 +23,7 @@ issue or PR that taught it.
 
 ## 4. Performant
 
-- [ ] TODO: the budgets that matter here (bundle size, startup, memory).
+- [ ] No budget yet. Set the scan and search times once the library size is known (#11).
 
 ## Open backlog
 

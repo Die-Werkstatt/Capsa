@@ -32,6 +32,11 @@
       "description": "suite-kit skills, agents, and Claude Code configuration."
     },
     {
+      "name": "area:api",
+      "color": "d4c5f9",
+      "description": "The local server between the index and the interface."
+    },
+    {
       "name": "area:build",
       "color": "fef2c0",
       "description": "Build tooling, dependencies and packaging."
@@ -47,14 +52,44 @@
       "description": "README, agent_docs and other documentation."
     },
     {
+      "name": "area:houdini",
+      "color": "ffd8b1",
+      "description": "The Houdini panel and import."
+    },
+    {
+      "name": "area:index",
+      "color": "c7def8",
+      "description": "The SQLite index and search."
+    },
+    {
       "name": "area:release",
       "color": "f5b7b1",
       "description": "Build, packaging, or release process."
     },
     {
+      "name": "area:scanner",
+      "color": "d1f0d1",
+      "description": "Library roots, scanning and asset detection."
+    },
+    {
+      "name": "area:site",
+      "color": "e6d7c3",
+      "description": "The website in docs/website."
+    },
+    {
+      "name": "area:thumbnails",
+      "color": "f7c6e0",
+      "description": "Thumbnails and their cache."
+    },
+    {
       "name": "area:ui",
       "color": "aed9e0",
       "description": "User-facing interface work."
+    },
+    {
+      "name": "area:usd",
+      "color": "bde0f2",
+      "description": "Reading USD files."
     },
     {
       "name": "p0",
