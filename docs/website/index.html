@@ -31,7 +31,7 @@ a:focus-visible { outline: 2px solid var(--lid); outline-offset: 3px; }
 .tag { position: absolute; font: 400 11px var(--mono); color: var(--muted); white-space: nowrap; transform: translate(14px, -50%); transition: opacity .2s; }
 .tag::before { content: ""; position: absolute; left: -14px; top: 50%; width: 10px; border-top: 1px solid var(--muted); }
 .tag b { color: var(--lid); font-weight: 400; }
-.wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+.wrap { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
 @media (max-width: 600px) { .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } }
 
 header { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 5; background: linear-gradient(var(--deep) 40%, transparent); }
@@ -365,7 +365,7 @@ footer { position: relative; z-index: 1; padding-block: 40px; color: var(--muted
       physics(m);
       m.scale.setScalar(1 + m.userData.sq);
     });
-    const tx = wide ? (p > 0.15 && p < 0.75 ? 2.8 : 2.55) : 0;
+    const tx = wide ? (p > 0.15 && p < 0.75 ? 2.6 : 2.35) : 0;
     const ty = (wide ? 0.6 : 2.0) - p * (wide ? 0.6 : 1.0);
     if (first) { box.position.set(tx, ty, 0); first = false; }   // start where it belongs, no drift from the centre
     box.position.x += (tx - box.position.x) * 0.06;
