@@ -152,7 +152,7 @@ Settled. Logo files and rules: [`docs/brand/`](brand/README.md).
 - Wordmark: squared CAPSA built on a 1u grid (1u = stroke width); the top of each A is a blue lid bar.
 - Mark: the box — a C turned 90° with a cut in its base and a blue lid, 5u square, same height as the letters.
 - Spacing: one gap g = 0.6u everywhere; A, P and S share one centre line at 2.7u; mark to name and clear space = 3g.
-- Dark, minimal; accent blue `#4F8CFF`. Full colour/type system waits until the UI exists.
+- Dark, minimal; accent blue `#4F8CFF`. Interface, colour tokens and prototype: [`docs/design/`](design/README.md). Font still open.
 
 ---
 
