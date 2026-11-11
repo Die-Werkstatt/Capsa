@@ -4,6 +4,18 @@ One-page site with a hero, features and download. Open `index.html` in a browser
 
 A wireframe Capsa box floats over a perspective grid. While you scroll, the lid lifts, assets (models, textures, HDRIs, stages, caches) circle the box, the box comes apart into labelled parts and then closes again at the download section. The highlighted asset type follows the cycling word in the title.
 
+## Hosting on Cloudflare Pages
+
+Connect this repository as a Pages project (Git integration) with:
+
+- Production branch: `main`
+- Framework preset: None
+- Build command: empty
+- Root directory: `docs/website`
+- Build output directory: `/`
+
+The folder is self-contained, so nothing outside `docs/website` is published.
+
 ## Dependencies
 
 - three.js r128 from cdnjs
