@@ -1,6 +1,6 @@
 # Architecture
 
-Draft. The scanner, asset detection, the index and thumbnails exist (`scanner.py`, `assets.py`, `index.py`, `thumbnails.py` in `src/capsa/`); the index stores the assets. Nothing calls the thumbnails yet. The other parts are the plan for phase 1.
+Draft. The scanner, asset detection, the index and thumbnails exist (`scanner.py`, `assets.py`, `index.py`, `thumbnails.py` in `src/capsa/`); the index stores the assets. `library.py` runs them in order and the `capsa` command (`__main__.py`) starts it. The other parts are the plan for phase 1.
 
 ```
 Library roots (read only)          Capsa's data folder
@@ -16,6 +16,7 @@ Library roots (read only)          Capsa's data folder
 - **Asset detection:** groups files into assets, such as a model with its texture folder.
 - **Index:** one SQLite file holding files, assets, tags and collections, with full-text search.
 - **Thumbnails:** 512 px JPEG previews of images, made with OpenImageIO, kept in the cache.
+- **Data folder:** `%LOCALAPPDATA%\Capsa` on Windows, `$XDG_DATA_HOME/capsa` (default `~/.local/share/capsa`) on Linux. Holds `index.sqlite` and `thumbnails/`.
 - **Local server:** answers the interface's questions from the index.
 - **Interface:** the three views in `docs/design/`.
 
