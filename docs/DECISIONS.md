@@ -70,3 +70,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Why:** A changed file gets a new name, so no thumbnail can be stale and nothing has to compare dates. 512 px covers a tile on a 4k screen; the cost is in reading the source (1.4 to 1.9 s for an 8k HDRI on Sandro's machine), not in the size written. OpenImageIO reads every image format in the library except `.rat` and has wheels for Windows and Linux.
 **Alternatives:** Naming the thumbnail after the asset's id: needs the index to know when to remake it. PNG: no loss, several times the size. A tone-mapped HDRI: closer to how it lights a scene, but one more look to choose.
 **Trade-off:** The thumbnail of a changed or deleted file stays in the cache until something clears it, which nothing does yet. A bright sky clips to white. Making one blocks the caller: running it in the background is the server's job (#17). `.rat`, models and USD files get no thumbnail.
+
+## 2026-11-12: A command line before the window
+**Decision:** `capsa add <folder>`, `capsa scan` and `capsa search <words>` run the scanner, grouping, index and thumbnails from a terminal. Capsa's data is in `%LOCALAPPDATA%\Capsa` on Windows and `$XDG_DATA_HOME/capsa` on Linux. Library roots are stored in the index.
+**Why:** The parts can be tried on the real library before the server and the window exist, and the window will call the same `refresh`. `%LOCALAPPDATA%` is where Windows keeps data that belongs to one machine; an index of local drive paths should not roam to another.
+**Alternatives:** Wait for the window: nothing could be checked on the real library until three more parts are built. A data folder beside the code: lost with a fresh checkout, and inside the repository.
+**Trade-off:** One more way in to keep working. `capsa scan` makes thumbnails one after another and prints nothing until a root is done: with many 8k HDRIs the first scan takes minutes.

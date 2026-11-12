@@ -3,8 +3,8 @@
 Asset library for VFX/3D: a personal tool for Sandro's Houdini/Solaris (USD,
 Karma) workflow that indexes existing asset folders and finds assets fast. It
 is also a learning project: Sandro must be able to explain and extend every
-part without AI. Phase 1 has started: scanner, index and thumbnails, no
-interface. The brief is `docs/BRIEF.md`.
+part without AI. Phase 1 has started: scanner, index, thumbnails and a
+command line, no window. The brief is `docs/BRIEF.md`.
 
 ## Stack
 
@@ -19,7 +19,8 @@ interface. The brief is `docs/BRIEF.md`.
 
 - `src/capsa/`: `scanner.py` lists the files under a library root, `assets.py`
   groups them into assets, `index.py` keeps the assets in SQLite and searches
-  them, `thumbnails.py` makes a preview of an image.
+  them, `thumbnails.py` makes a preview of an image, `library.py` runs them
+  in order and names the data folder, `__main__.py` is the `capsa` command.
 - `tests/`: unit tests. Houdini is not available in Claude's environment; what
   Sandro's machine showed is in issue #11.
 - `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,
@@ -54,6 +55,7 @@ interface. The brief is `docs/BRIEF.md`.
 ```sh
 uv run python3 .claude/suite-check.py   # every health check in .claude/suite.json
 uv run pytest -q                        # unit tests
+uv run capsa scan                       # add <folder>, scan, search <words>
 ```
 
 `uv run` puts the pinned ruff first on the path; without it the aislop check

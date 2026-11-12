@@ -8,6 +8,10 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Cover:** the picture shown on an asset's tile.
 
+**Command line:** a program you run by typing its name and some words in a terminal, such as `capsa scan`. No window.
+
+**Data folder:** the folder where Capsa keeps what it writes: the index and the thumbnails. On Windows `%LOCALAPPDATA%\Capsa`.
+
 **Database:** a file built for storing rows of data and finding them again quickly. Capsa's index is one.
 
 **Dataclass:** a small Python class that only holds values, like a row in a spreadsheet. `FileRecord` is one: path, size, date, kind.

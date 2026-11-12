@@ -11,7 +11,7 @@ Your assets stay where they are. Capsa walks through the folders you point it at
 - **Thumbnails** are small preview images Capsa makes once and keeps, like a texture cache.
 - **The interface** shows the index as a grid you can search and filter.
 
-The scanner, the grouping into assets, the index and thumbnails exist so far: see [scanner.md](scanner.md), [assets.md](assets.md), [index.md](index.md) and [thumbnails.md](thumbnails.md).
+The scanner, the grouping into assets, the index and thumbnails exist so far: see [scanner.md](scanner.md), [assets.md](assets.md), [index.md](index.md) and [thumbnails.md](thumbnails.md). [library.md](library.md) shows how to run them on your library.
 
 ## What Capsa never does
 
