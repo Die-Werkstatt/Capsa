@@ -58,3 +58,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Alternatives:** Every file an asset: 450 material files as 450 tiles. Every lowest folder an asset: `hdri/exterior/4k` would be one tile holding all its HDRIs. A sidecar file per asset: writes into the library.
 **Trade-off:** Two sets in one folder merge into one material. Resolutions of one material in sibling folders show as separate materials. An `.exr` that is not an HDRI is mislabelled until the image's proportions are read.
 
+## 2026-11-12: The index stores assets
+**Decision:** The index keeps one row per asset and the asset's files beneath it. Search returns assets and looks at their paths, not at the names of the files inside. The schema version is 2; an index of version 1 is refused, not converted.
+**Why:** The catalogue shows assets, and tags and favourites will belong to an asset. Searching file names would answer "roughness" with every material in the library.
+**Alternatives:** Keep files as the unit and group them on every search: the grouping would run for each keystroke. Convert version 1 files: the only one in existence is a test file.
+**Trade-off:** A map cannot be found by its own file name. If a folder turns into a material because maps were added, its former single assets go missing and a new asset appears.
+

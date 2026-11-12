@@ -39,7 +39,6 @@ A lone `.exr` is taken for an HDRI. That is true for your library today, where e
 
 - Two texture sets in one folder become one material.
 - `metalPlates_08_4K` and `metalPlates_08_2K` are two materials, not two resolutions of one.
-- The assets are not stored in the index. `group` runs on a scan and returns a list.
 
 ## Try it
 

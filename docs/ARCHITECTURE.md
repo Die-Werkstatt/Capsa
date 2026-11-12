@@ -1,6 +1,6 @@
 # Architecture
 
-Draft. The scanner, asset detection and the index exist (`scanner.py`, `assets.py`, `index.py` in `src/capsa/`); the index stores files, not yet assets. The other parts are the plan for phase 1.
+Draft. The scanner, asset detection and the index exist (`scanner.py`, `assets.py`, `index.py` in `src/capsa/`); the index stores the assets. The other parts are the plan for phase 1.
 
 ```
 Library roots (read only)          Capsa's data folder
