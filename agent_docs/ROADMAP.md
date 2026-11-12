@@ -17,7 +17,6 @@ Decisions and checks that the first features wait for.
 
 Phase 1, one pull request per item, in this order.
 
-- [ ] Keep the index in SQLite with full-text search (#14)
 - [ ] Group files into assets (#15)
 - [ ] Make thumbnails for images and HDRIs (#16)
 - [ ] Serve the index and show the catalogue (#17)

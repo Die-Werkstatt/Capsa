@@ -2,11 +2,15 @@
 
 Every technical term used in Capsa, in plain language. Alphabetical.
 
+**Database:** a file built for storing rows of data and finding them again quickly. Capsa's index is one.
+
 **Dataclass:** a small Python class that only holds values, like a row in a spreadsheet. `FileRecord` is one: path, size, date, kind.
 
 **Dependency:** code somebody else wrote that Capsa uses, such as pytest. Like a plugin: Capsa does not work without it, and it has its own version.
 
 **Enum:** a fixed list of allowed values with names. `Kind` is one: USD, texture, HDRI and so on. A typo such as `Kind.TEXTRUE` fails at once, where a misspelt word in quotes would pass unnoticed.
+
+**Full-text search (FTS5):** a search that looks up words in a prepared list, like the index at the back of a book, and does not read every row.
 
 **Library root:** a folder you point Capsa at. Everything inside it belongs to the library.
 
@@ -18,7 +22,13 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **ruff:** the program that checks Python code for mistakes and formats it the same way everywhere.
 
+**SQLite:** a database that is a single file and needs no server. It comes with Python.
+
 **Suffix:** the end of a file name that says what the file is, such as `.usd` or `.bgeo.sc`.
+
+**Table:** one spreadsheet inside a database: named columns, one row per thing.
+
+**Transaction:** a group of changes that are written all together or not at all.
 
 **uv:** the tool that installs Python, creates the project's private environment (`.venv`) and runs commands inside it. `uv run pytest` means "run pytest with exactly this project's dependencies".
 

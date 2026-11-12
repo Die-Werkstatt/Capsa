@@ -40,3 +40,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Alternatives:** Open each file during the scan to read its contents: slow on a large library, and one broken file could stop the scan.
 **Trade-off:** HDRIs saved as `.exr` show up as textures until asset detection exists.
 
+## 2026-11-12: One central index in SQLite
+**Decision:** Everything Capsa knows is in one SQLite file in Capsa's own data folder. Search uses SQLite's FTS5. A file that disappears is marked missing, not removed.
+**Why:** The brief forbids writing into library roots, which rules out sidecar files beside assets. SQLite is one file, needs no server and comes with Python, FTS5 included (CPython's Windows build sets `SQLITE_ENABLE_FTS5`; not yet run on Sandro's machine, #11). Marking keeps tags when a drive is unplugged.
+**Alternatives:** Sidecar files next to each asset: they travel with the asset, but write into the library. A JSON file: simple, but every search would read all of it.
+**Trade-off:** Tags live only in the index. Move an asset folder to another machine and its tags stay behind. Missing rows pile up until something cleans them, which nothing does yet.
+
