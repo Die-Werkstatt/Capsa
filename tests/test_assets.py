@@ -96,3 +96,53 @@ def test_one_map_alone_is_not_a_material(tmp_path: Path):
     (tmp_path / "wall_normal.png").touch()
     (tmp_path / "wall_photo.png").touch()
     assert [asset.kind for asset in group(scan(tmp_path).files)] == [Kind.TEXTURE, Kind.TEXTURE]
+
+
+def make(tmp_path: Path, names: list[str]) -> list[Asset]:
+    for name in names:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+    return group(scan(tmp_path).files)
+
+
+def test_gloss_mask_roughness_folder_is_a_material(tmp_path: Path):
+    # The pattern of the marks sets in Sandro's library (issue #11 follow-up).
+    (asset,) = make(
+        tmp_path,
+        [
+            f"Scratches_Marks_01_4K/Scratched_Metal_vdekebbc_4K_{map}.jpg"
+            for map in ("Gloss", "Mask", "Roughness")
+        ],
+    )
+    assert asset.kind == Kind.MATERIAL
+    assert asset.name == "Scratches_Marks_01_4K"
+
+
+def test_numbered_frames_are_one_sequence(tmp_path: Path):
+    # Sandro's caustics folder: 240 frames numbered from 0000.
+    stem = "caustics_02b/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_"
+    names = [f"{stem}{n:04}.jpg" for n in range(240)]
+    (asset,) = make(tmp_path, [*names, f"{stem}0000.jpg.rat"])
+    assert asset.kind == Kind.SEQUENCE
+    assert asset.name == "02B_Caribbean_Caustics_Deep_FREE_SAMPLE"
+    assert asset.path == tmp_path / f"{stem}####.jpg"
+    assert asset.cover == tmp_path / f"{stem}0000.jpg"
+    assert len(asset.files) == 241
+
+
+def test_sequence_without_prefix_takes_folder_name(tmp_path: Path):
+    # Sandro's DustScratches_01 folder holds 01.png to 06.png.
+    (asset,) = make(tmp_path, [f"DustScratches_01/{n:02}.png" for n in range(1, 7)])
+    assert (asset.kind, asset.name) == (Kind.SEQUENCE, "DustScratches_01")
+
+
+def test_numbers_with_gaps_stay_single_files(tmp_path: Path):
+    # Photos like IMG_4512, IMG_4519: numbered, but not frames.
+    found = make(tmp_path, [f"photos/IMG_{n}.jpg" for n in (4512, 4519, 4530)])
+    assert [asset.kind for asset in found] == [Kind.TEXTURE] * 3
+
+
+def test_two_numbered_files_are_no_sequence(tmp_path: Path):
+    found = make(tmp_path, ["avatar/v1.png", "avatar/v2.png"])
+    assert len(found) == 2
