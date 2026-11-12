@@ -17,10 +17,10 @@ brief is `docs/BRIEF.md`.
 
 ## Project structure
 
-- `src/capsa/`: `scanner.py` lists the files under a library root, `index.py`
-  keeps them in a SQLite file and searches it.
-- `tests/`: unit tests. `tests/fixtures/` will hold real files from Sandro's
-  machine (#11); Houdini is not available in Claude's environment.
+- `src/capsa/`: `scanner.py` lists the files under a library root, `assets.py`
+  groups them into assets, `index.py` keeps files in SQLite and searches them.
+- `tests/`: unit tests. Houdini is not available in Claude's environment; what
+  Sandro's machine showed is in issue #11.
 - `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,
   conventions, brand, design and website. `docs/learn/`: beginner
   explanations, one page per module.

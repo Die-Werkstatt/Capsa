@@ -2,6 +2,10 @@
 
 Every technical term used in Capsa, in plain language. Alphabetical.
 
+**Asset:** one thing in the catalogue: a material, an HDRI, a model. It can be one file or a folder of files.
+
+**Cover:** the picture shown on an asset's tile.
+
 **Database:** a file built for storing rows of data and finding them again quickly. Capsa's index is one.
 
 **Dataclass:** a small Python class that only holds values, like a row in a spreadsheet. `FileRecord` is one: path, size, date, kind.
@@ -21,6 +25,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 **pytest:** the program that runs the tests. A test is a small script that checks one behaviour and fails loudly when the behaviour changes.
 
 **ruff:** the program that checks Python code for mistakes and formats it the same way everywhere.
+
+**Texture set:** the maps of one material that belong together: colour, roughness, normal and so on.
 
 **SQLite:** a database that is a single file and needs no server. It comes with Python.
 
