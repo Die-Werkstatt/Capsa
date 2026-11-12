@@ -18,6 +18,7 @@ Phase 1, one pull request per item, in this order.
 
 - [ ] Serve the index and show the catalogue (#17)
 - [ ] Keep the index current when files change (#18)
+- [ ] Tell an HDRI from another `.exr` by its shape (#29)
 
 ## Later
 
