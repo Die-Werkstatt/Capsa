@@ -8,7 +8,6 @@ of `docs/BRIEF.md`, section 4.
 
 Decisions and checks that the first features wait for.
 
-- [ ] Decide the stack and the window (#7)
 - [ ] Decide whether Capsa is public, and its licence (#8)
 - [ ] Check the open assumptions on Sandro's machine (#11)
 - [ ] Set the template answers (#19)

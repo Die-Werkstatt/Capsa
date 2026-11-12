@@ -12,8 +12,8 @@ brief is `docs/BRIEF.md`.
   dependency yet.
 - pytest for unit tests, ruff 0.16.7 through aislop for lint.
 - Runs on Windows now and Linux later.
-- Planned, not installed: usd-core, OpenImageIO, SQLite FTS5, FastAPI, React.
-  The window is undecided (#7).
+- Planned, not installed: usd-core, OpenImageIO, SQLite FTS5, FastAPI, React
+  in a pywebview window (`docs/DECISIONS.md`).
 
 ## Project structure
 
