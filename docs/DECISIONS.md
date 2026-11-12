@@ -64,3 +64,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Alternatives:** Keep files as the unit and group them on every search: the grouping would run for each keystroke. Convert version 1 files: the only one in existence is a test file.
 **Trade-off:** A map cannot be found by its own file name. If a folder turns into a material because maps were added, its former single assets go missing and a new asset appears.
 
+
+## 2026-11-12: Thumbnails are 512 px JPEGs named after the file's state
+**Decision:** A thumbnail is a JPEG, 512 px on its longest side, never larger than the source. Its file name is a hash of the source's path, size and date. `.exr` and `.hdr` are converted from linear to sRGB and clipped at white. Of a file with several parts the first is used, of its channels the first three. The cache folder is handed in by the caller.
+**Why:** A changed file gets a new name, so no thumbnail can be stale and nothing has to compare dates. 512 px covers a tile on a 4k screen; the cost is in reading the source (1.4 to 1.9 s for an 8k HDRI on Sandro's machine), not in the size written. OpenImageIO reads every image format in the library except `.rat` and has wheels for Windows and Linux.
+**Alternatives:** Naming the thumbnail after the asset's id: needs the index to know when to remake it. PNG: no loss, several times the size. A tone-mapped HDRI: closer to how it lights a scene, but one more look to choose.
+**Trade-off:** The thumbnail of a changed or deleted file stays in the cache until something clears it, which nothing does yet. A bright sky clips to white. Making one blocks the caller: running it in the background is the server's job (#17). `.rat`, models and USD files get no thumbnail.

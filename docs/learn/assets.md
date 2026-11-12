@@ -33,7 +33,7 @@ Every asset can have a **cover**, the picture shown on its tile.
 
 ## An assumption to know about
 
-A lone `.exr` is taken for an HDRI. That is true for your library today, where every `.exr` outside a material is one. A render saved as `.exr` would be mislabelled. The reliable test is the picture's shape (an HDRI is twice as wide as it is high), which needs the file opened. That comes with thumbnails.
+A lone `.exr` is taken for an HDRI. That is true for your library today, where every `.exr` outside a material is one. A render saved as `.exr` would be mislabelled. The reliable test is the picture's shape (an HDRI is twice as wide as it is high), which needs the file opened. Nothing does that test yet.
 
 ## What it does not do yet
 
