@@ -82,3 +82,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Why:** The first scan of Sandro's library gave 352 assets, 301 of them loose textures; 240 were the frames of one caustics sequence. The marks sets (`_Gloss`, `_Mask`, `_Roughness`) stayed loose because two of their three words were unknown.
 **Alternatives:** Any shared prefix with a number: photos like `IMG_4512`, `IMG_4519` would become a sequence. A minimum of 24 frames: short sequences stay loose.
 **Trade-off:** A sequence with one missing frame falls apart into single files. Numbered overlays such as `Dust_01` to `Dust_06` become one sequence.
+
+## 2026-11-13: A regrouped asset is forgotten
+**Decision:** An asset the scan did not find, whose files the same scan put into other assets, is deleted from the index instead of marked missing.
+**Why:** After the sequence rule, the rescan of Sandro's library marked 274 assets missing: the 240 caustics frames and the loose marks maps, all still on disk inside the new sequence and materials. Nothing would ever clear that mark.
+**Alternatives:** A command that deletes every missing row: also deletes the rows of an unplugged drive, with their tags.
+**Trade-off:** A tag on a regrouped asset is lost. No asset has tags yet.
