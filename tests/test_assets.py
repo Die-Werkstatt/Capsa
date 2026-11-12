@@ -96,3 +96,50 @@ def test_one_map_alone_is_not_a_material(tmp_path: Path):
     (tmp_path / "wall_normal.png").touch()
     (tmp_path / "wall_photo.png").touch()
     assert [asset.kind for asset in group(scan(tmp_path).files)] == [Kind.TEXTURE, Kind.TEXTURE]
+
+
+def make(tmp_path: Path, names: list[str]) -> list[Asset]:
+    for name in names:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+    return group(scan(tmp_path).files)
+
+
+def test_gloss_mask_roughness_folder_is_a_material(tmp_path: Path):
+    # The pattern of the marks sets in Sandro's library (issue #11 follow-up).
+    (asset,) = make(
+        tmp_path,
+        [
+            f"Scratches_Marks_01_4K/Scratched_Metal_vdekebbc_4K_{map}.jpg"
+            for map in ("Gloss", "Mask", "Roughness")
+        ],
+    )
+    assert asset.kind == Kind.MATERIAL
+    assert asset.name == "Scratches_Marks_01_4K"
+
+
+def test_numbered_frames_are_one_sequence(tmp_path: Path):
+    names = [f"caustics_02b/caustics_{n:04}.png" for n in range(1001, 1241)]
+    (asset,) = make(tmp_path, [*names, "caustics_02b/caustics_1001.png.rat"])
+    assert asset.kind == Kind.SEQUENCE
+    assert asset.name == "caustics"
+    assert asset.path == tmp_path / "caustics_02b" / "caustics_####.png"
+    assert asset.cover == tmp_path / "caustics_02b" / "caustics_1001.png"
+    assert len(asset.files) == 241
+
+
+def test_sequence_without_prefix_takes_folder_name(tmp_path: Path):
+    (asset,) = make(tmp_path, [f"droplets/{n}.exr" for n in range(1, 4)])
+    assert (asset.kind, asset.name) == (Kind.SEQUENCE, "droplets")
+
+
+def test_numbers_with_gaps_stay_single_files(tmp_path: Path):
+    # Photos like IMG_4512, IMG_4519: numbered, but not frames.
+    found = make(tmp_path, [f"photos/IMG_{n}.jpg" for n in (4512, 4519, 4530)])
+    assert [asset.kind for asset in found] == [Kind.TEXTURE] * 3
+
+
+def test_two_numbered_files_are_no_sequence(tmp_path: Path):
+    found = make(tmp_path, ["avatar/v1.png", "avatar/v2.png"])
+    assert len(found) == 2

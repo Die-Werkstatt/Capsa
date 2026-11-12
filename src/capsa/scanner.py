@@ -16,6 +16,7 @@ class Kind(Enum):
     MATERIAL = "material"
     CACHE = "cache"
     HDA = "hda"
+    SEQUENCE = "sequence"
     OTHER = "other"
 
 

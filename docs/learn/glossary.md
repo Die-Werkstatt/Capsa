@@ -28,6 +28,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Linear and sRGB:** two ways to store brightness. Linear stores the amount of light, which is what a renderer computes with. sRGB stores what a screen expects. Showing linear values unconverted looks too dark.
 
+**Image sequence:** one image per frame, numbered: `caustics_1001.png`, `caustics_1002.png` and so on. Written `caustics_####.png`; Houdini writes `caustics_$F4.png`.
+
 **Lockfile (`uv.lock`):** the exact version of every dependency, written by uv. Like caching a simulation to disk: everybody who opens the project gets the same result, not whatever is newest that day.
 
 **OpenImageIO:** the library that reads and writes image files, the one behind `oiiotool` and `iconvert`. Capsa's first dependency.

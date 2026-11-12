@@ -76,3 +76,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Why:** The parts can be tried on the real library before the server and the window exist, and the window will call the same `refresh`. `%LOCALAPPDATA%` is where Windows keeps data that belongs to one machine; an index of local drive paths should not roam to another.
 **Alternatives:** Wait for the window: nothing could be checked on the real library until three more parts are built. A data folder beside the code: lost with a fresh checkout, and inside the repository.
 **Trade-off:** One more way in to keep working. `capsa scan` makes thumbnails one after another and prints nothing until a root is done: with many 8k HDRIs the first scan takes minutes.
+
+## 2026-11-12: Numbered frames are one asset
+**Decision:** Three or more images in one folder whose names differ only in a trailing number of the same width, with no gap, are one image sequence. `Gloss` and `Mask` count as map words.
+**Why:** The first scan of Sandro's library gave 352 assets, 301 of them loose textures; 240 were the frames of one caustics sequence. The marks sets (`_Gloss`, `_Mask`, `_Roughness`) stayed loose because two of their three words were unknown.
+**Alternatives:** Any shared prefix with a number: photos like `IMG_4512`, `IMG_4519` would become a sequence. A minimum of 24 frames: short sequences stay loose.
+**Trade-off:** A sequence with one missing frame falls apart into single files. Numbered overlays such as `Dust_01` to `Dust_06` become one sequence.

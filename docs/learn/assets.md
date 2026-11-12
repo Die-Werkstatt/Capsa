@@ -13,14 +13,19 @@ It is like the difference between a folder of frames and one image sequence: sam
 Capsa looks at one folder at a time.
 
 **1. A folder with a texture set is one material.**
-A texture set is two or more different maps side by side. Capsa recognises a map by a word in its file name: `Color`, `Roughness`, `NormalGL`, `Displacement`, `diff`, `rough`, `nor` and so on. The full list is `MAP_WORDS` at the top of the file.
+A texture set is two or more different maps side by side. Capsa recognises a map by a word in its file name: `Color`, `Roughness`, `NormalGL`, `Displacement`, `Gloss`, `Mask`, `diff`, `rough`, `nor` and so on. The full list is `MAP_WORDS` at the top of the file.
 
 If a folder has a set, everything directly in that folder belongs to the material: the maps, the `.usdc`, the `.mtlx`, the `.rat` copies. The material is named after the folder.
 
-**2. Any other file is its own asset.**
+**2. Numbered frames are one sequence.**
+Three or more images whose names differ only in the number at the end, with no number missing, are one **image sequence**: `caustics_1001.png` to `caustics_1240.png`. It is named after the part before the number (`caustics`), or after the folder if there is none. Its path is written the way Houdini and Nuke show a sequence, `caustics_####.png`, one `#` per digit. Its cover is the first frame.
+
+`IMG_4512.jpg`, `IMG_4519.jpg` have gaps: photos, not frames. They stay single files. So do two files, like `v1.png` and `v2.png`.
+
+**3. Any other file is its own asset.**
 An HDRI, a model, a logo. It is named after the file.
 
-**3. A `.rat` copy joins its source.**
+**4. A `.rat` copy joins its source.**
 Houdini writes `goegap_4k.exr.rat` beside `goegap_4k.exr`. That is the same picture twice, so both are one asset. A `.rat` whose source is gone stands alone.
 
 ## The cover

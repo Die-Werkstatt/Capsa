@@ -11,6 +11,9 @@ from capsa.scanner import FileRecord, Kind
 COLOR_WORDS = {"color", "basecolor", "albedo", "diffuse", "diff", "col"}
 MAP_WORDS = COLOR_WORDS | {
     "roughness",
+    "gloss",
+    "glossiness",
+    "mask",
     "rough",
     "metalness",
     "metallic",
@@ -27,6 +30,10 @@ MAP_WORDS = COLOR_WORDS | {
     "emission",
     "specular",
 }
+
+# A frame number: the last run of digits in a file name, as in "caustics_0001.png".
+FRAME = re.compile(r"^(.*?)(\d+)$")
+MIN_FRAMES = 3
 
 # Houdini writes its own copy of a texture as "<file name>.rat" beside it.
 COMPANION_SUFFIX = ".rat"
@@ -67,7 +74,9 @@ def group(files: list[FileRecord]) -> list[Asset]:
         if len({map_word(record) for record in records} - {None}) >= 2:
             assets.append(material(folder, records))
         else:
-            assets.extend(single_files(records))
+            found, rest = sequences(folder, records)
+            assets.extend(found)
+            assets.extend(single_files(rest))
     return assets
 
 
@@ -79,6 +88,45 @@ def material(folder: Path, records: list[FileRecord]) -> Asset:
     candidates = previews or colors
     cover = candidates[0].path if candidates else None
     return Asset(folder.name, Kind.MATERIAL, folder, cover, tuple(records))
+
+
+def sequences(folder: Path, records: list[FileRecord]) -> tuple[list[Asset], list[FileRecord]]:
+    """Image sequences in one folder, and the files that belong to none.
+
+    A sequence is at least MIN_FRAMES images whose names differ only in a frame
+    number of the same width, and whose numbers have no gap.
+    """
+    runs: dict[tuple[str, int, str], list[tuple[int, FileRecord]]] = defaultdict(list)
+    for record in records:
+        if record.kind != Kind.TEXTURE or is_companion(record):
+            continue
+        match = FRAME.match(record.path.stem)
+        if match:
+            prefix, digits = match.groups()
+            key = (prefix, len(digits), record.path.suffix.lower())
+            runs[key].append((int(digits), record))
+
+    found: list[Asset] = []
+    taken: set[Path] = set()
+    for (prefix, width, suffix), frames in runs.items():
+        numbers = sorted(number for number, _ in frames)
+        if len(frames) < MIN_FRAMES or numbers[-1] - numbers[0] + 1 != len(frames):
+            continue
+        frames.sort(key=lambda frame: frame[0])
+        first = frames[0][1].path
+        # Companion .rat files of the frames join the sequence.
+        names = {record.path.name for _, record in frames}
+        members = [
+            r
+            for r in records
+            if r.path.name in names
+            or (is_companion(r) and r.path.name[: -len(COMPANION_SUFFIX)] in names)
+        ]
+        taken.update(r.path for r in members)
+        name = prefix.rstrip("_.- ") or folder.name
+        pattern = folder / f"{prefix}{'#' * width}{first.suffix}"
+        found.append(Asset(name, Kind.SEQUENCE, pattern, first, tuple(members)))
+    return found, [r for r in records if r.path not in taken]
 
 
 def single_files(records: list[FileRecord]) -> list[Asset]:
