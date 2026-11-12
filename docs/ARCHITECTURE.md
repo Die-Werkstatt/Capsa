@@ -1,6 +1,6 @@
 # Architecture
 
-Draft. Only the package and its tests exist; the parts below are the plan for phase 1.
+Draft. The scanner exists (`src/capsa/scanner.py`); the other parts are the plan for phase 1.
 
 ```
 Library roots (read only)          Capsa's data folder
