@@ -69,7 +69,7 @@ The prototype shows these, but they are proposals:
 
 - **Units:** dimensions shown in metres, read from the stage's `metersPerUnit`. A USD file that doesn't author it falls back to centimetres (OpenUSD's default) and lands under Units not set.
 - **Texture sets:** one set per folder, with name-prefix matching as a fallback. The colour map is the cover; the Catalogue shows it on a material sphere. EXR and TX maps need PNG previews made with OpenImageIO.
-- **USD variants:** a Component Builder folder counts as one asset (payload, geo and mtl files are its layers). Variants come from the file, thumbnails from its `variants/` folder.
+- **USD variants:** a Component Builder folder counts as one asset (payload, geo and mtl files are its layers). Variants come from the file. The thumbnail is the one the file names in `assetInfo` (`previews.thumbnails.default.defaultImage`; `./thumbnail.png` in the Houdini 21 asset checked in #11). `variants/` exists only with Variant Layers on; what it holds is unverified.
 - **Houdini:** a Capsa Import LOP with a Browse button that opens the Capsa picker, instead of a Send to Houdini button. See the brief, section 5.
 - **Font:** see Type above.
 

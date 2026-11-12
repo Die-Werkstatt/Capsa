@@ -10,7 +10,7 @@ Decisions and checks that the first features wait for.
 
 - [ ] Decide whether Capsa is public, and its licence (#8)
 - [ ] Set the template answers (#19)
-- [ ] Correct the claims the official docs contradict (#12)
+- [ ] Choose one font (#12)
 
 ## Next
 

@@ -55,7 +55,7 @@ Each phase must be usable on its own before starting the next.
 ### Phase 1: Index & browse (core)
 - Library roots: point Capsa at folders; it scans them read-only and keeps watching for changes.
 - Asset detection: group files into one asset (e.g. a model plus its texture folder) instead of listing every file.
-- Supported first: USD (`.usd/.usda/.usdc/.usdz`), Alembic, FBX, OBJ, textures (EXR, TX, PNG, JPG, TIFF), HDRIs.
+- Supported first: USD (`.usd/.usda/.usdc/.usdz`), Alembic, FBX, OBJ, textures (EXR, TX, PNG, JPG, TIFF), HDRIs. Alembic, FBX and OBJ are listed by name, size and date only: usd-core has no Alembic plugin and nothing planned reads FBX or OBJ.
 - Thumbnails for images and HDRIs (OpenImageIO), cached outside the library.
 - Grid browser with search (SQLite full-text), filter by type, size, date.
 - Tags, favourites, collections.
@@ -89,7 +89,7 @@ Each phase must be usable on its own before starting the next.
 - **Stack:** same as Laterna (Python + FastAPI, React, SQLite FTS, usd-core, OpenImageIO) and whether to share code with it.
 - **What counts as one asset:** folder-based, name-based, or a sidecar file per asset.
 - **Where Capsa's data lives:** one central index vs. small sidecar files next to assets (sidecars would mean writing into my folders).
-- **3D thumbnails without a Houdini licence:** usd-core + a lightweight renderer, Blender in background mode, or the browser preview captured to an image.
+- **3D thumbnails without a Houdini licence:** usd-core to read the geometry + a renderer of its own (usd-core has no imaging), Blender in background mode, or the browser preview captured to an image.
 - **Houdini integration:** Python panel vs. shelf tool vs. a package with both.
 
 Unverified assumptions to check before building:
