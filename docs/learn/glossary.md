@@ -4,6 +4,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Asset:** one thing in the catalogue: a material, an HDRI, a model. It can be one file or a folder of files.
 
+**Cache:** files Capsa made and can make again, kept so the work is done once. Deleting the cache loses nothing.
+
 **Cover:** the picture shown on an asset's tile.
 
 **Database:** a file built for storing rows of data and finding them again quickly. Capsa's index is one.
@@ -16,9 +18,15 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Full-text search (FTS5):** a search that looks up words in a prepared list, like the index at the back of a book, and does not read every row.
 
+**Hash:** a short fingerprint computed from some text. The same text always gives the same hash; a changed text gives another one.
+
 **Library root:** a folder you point Capsa at. Everything inside it belongs to the library.
 
+**Linear and sRGB:** two ways to store brightness. Linear stores the amount of light, which is what a renderer computes with. sRGB stores what a screen expects. Showing linear values unconverted looks too dark.
+
 **Lockfile (`uv.lock`):** the exact version of every dependency, written by uv. Like caching a simulation to disk: everybody who opens the project gets the same result, not whatever is newest that day.
+
+**OpenImageIO:** the library that reads and writes image files, the one behind `oiiotool` and `iconvert`. Capsa's first dependency.
 
 **Package:** a folder of Python code that can be imported by name. `src/capsa/` is the `capsa` package.
 

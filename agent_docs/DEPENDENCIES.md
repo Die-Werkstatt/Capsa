@@ -15,6 +15,7 @@ the reason, so the same discussion does not happen twice.
 
 | Dependency | Kind | Why |
 |---|---|---|
+| OpenImageIO | runtime | Reads `.exr`, `.hdr` and the common image formats and writes thumbnails; the standard library reads none of them. Brings numpy. Opens files from library roots, writes only where it is told. |
 | pytest | dev | Runs the unit tests. |
 | ruff | dev | Lint and format. Pinned to 0.16.7, the version aislop 0.16.0 runs. |
 | uv_build | build | Builds the `capsa` package from `src/`; uv's own backend. |
