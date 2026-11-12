@@ -18,7 +18,7 @@ brief is `docs/BRIEF.md`.
 ## Project structure
 
 - `src/capsa/`: `scanner.py` lists the files under a library root, `assets.py`
-  groups them into assets, `index.py` keeps files in SQLite and searches them.
+  groups them into assets, `index.py` keeps the assets in SQLite and searches them.
 - `tests/`: unit tests. Houdini is not available in Claude's environment; what
   Sandro's machine showed is in issue #11.
 - `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,

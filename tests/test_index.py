@@ -3,16 +3,25 @@ from pathlib import Path
 
 import pytest
 
+from capsa.assets import Asset, group
 from capsa.index import Changes, Index
 from capsa.scanner import Kind, scan
+
+
+def found(root: Path) -> list[Asset]:
+    return group(scan(root).files)
 
 
 @pytest.fixture
 def library(tmp_path: Path) -> Path:
     root = tmp_path / "library"
-    (root / "chair" / "tex").mkdir(parents=True)
-    (root / "chair" / "chair.usd").write_bytes(b"usd")
-    (root / "chair" / "tex" / "chair_basecolor.exr").write_bytes(b"12345")
+    metal = root / "materials" / "metal_053B"
+    metal.mkdir(parents=True)
+    (metal / "Metal053B.png").write_bytes(b"preview")
+    (metal / "Metal053B_Color.png").write_bytes(b"12345")
+    (metal / "Metal053B_Roughness.png").write_bytes(b"123")
+    (root / "models").mkdir()
+    (root / "models" / "chair.obj").write_bytes(b"obj")
     (root / "sky_sunset.hdr").write_bytes(b"")
     return root
 
@@ -25,73 +34,83 @@ def index(tmp_path: Path, library: Path):
     index.close()
 
 
-def paths(index: Index, text: str) -> list[str]:
-    return [found.path.name for found in index.search(text)]
+def names(index: Index, text: str) -> list[str]:
+    return [asset.name for asset in index.search(text)]
 
 
-def test_first_scan_adds_every_file(index: Index, library: Path):
-    assert index.update(library, scan(library).files) == Changes(added=3, changed=0, missing=0)
+def test_first_scan_adds_every_asset(index: Index, library: Path):
+    assert index.update(library, found(library)) == Changes(added=3, changed=0, missing=0)
 
 
 def test_same_scan_twice_changes_nothing(index: Index, library: Path):
-    index.update(library, scan(library).files)
-    assert index.update(library, scan(library).files) == Changes(0, 0, 0)
+    index.update(library, found(library))
+    assert index.update(library, found(library)) == Changes(0, 0, 0)
 
 
-def test_rescan_sees_changed_and_missing_files(index: Index, library: Path):
-    index.update(library, scan(library).files)
-    (library / "chair" / "chair.usd").write_bytes(b"a longer usd")
+def test_rescan_sees_changed_and_missing_assets(index: Index, library: Path):
+    index.update(library, found(library))
+    (library / "materials" / "metal_053B" / "Metal053B_Normal.png").write_bytes(b"new map")
     (library / "sky_sunset.hdr").unlink()
-    assert index.update(library, scan(library).files) == Changes(added=0, changed=1, missing=1)
+    assert index.update(library, found(library)) == Changes(added=0, changed=1, missing=1)
     (sky,) = index.search("sunset")
     assert sky.missing
     # Already marked: a third scan does not count it again.
-    assert index.update(library, scan(library).files) == Changes(0, 0, 0)
+    assert index.update(library, found(library)) == Changes(0, 0, 0)
 
 
-def test_file_that_comes_back_is_no_longer_missing(index: Index, library: Path):
-    files = scan(library).files
-    index.update(library, files)
+def test_asset_that_comes_back_is_no_longer_missing(index: Index, library: Path):
+    assets = found(library)
+    index.update(library, assets)
     index.update(library, [])  # the drive was unplugged
-    assert all(found.missing for found in index.search("chair"))
-    assert index.update(library, files) == Changes(added=0, changed=3, missing=0)
-    assert not any(found.missing for found in index.search("chair"))
+    assert index.search("chair")[0].missing
+    assert index.update(library, assets) == Changes(added=0, changed=3, missing=0)
+    assert not index.search("chair")[0].missing
 
 
 def test_search_matches_words_from_their_start(index: Index, library: Path):
-    index.update(library, scan(library).files)
-    assert paths(index, "sunset") == ["sky_sunset.hdr"]
-    assert paths(index, "base") == ["chair_basecolor.exr"]
-    assert sorted(paths(index, "chair")) == ["chair.usd", "chair_basecolor.exr"]
-    assert paths(index, "chair exr") == ["chair_basecolor.exr"]
-    assert paths(index, "table") == []
-    assert paths(index, "   ") == []
+    index.update(library, found(library))
+    assert names(index, "sunset") == ["sky_sunset"]
+    assert names(index, "053") == ["metal_053B"]
+    assert names(index, "mat met") == ["metal_053B"]
+    assert names(index, "models") == ["chair"]
+    assert names(index, "table") == []
+    assert names(index, "   ") == []
+
+
+def test_search_finds_assets_not_their_files(index: Index, library: Path):
+    index.update(library, found(library))
+    assert names(index, "roughness") == []
 
 
 def test_search_survives_search_syntax(index: Index, library: Path):
-    index.update(library, scan(library).files)
-    assert paths(index, 'sky" OR (') == []
-    assert paths(index, "sky AND") == []
+    index.update(library, found(library))
+    assert names(index, 'sky" OR (') == []
+    assert names(index, "sky AND") == []
 
 
-def test_search_returns_the_full_record(index: Index, library: Path):
-    index.update(library, scan(library).files)
-    (found,) = index.search("basecolor")
-    assert found.path == library / "chair" / "tex" / "chair_basecolor.exr"
-    assert found.size_bytes == 5
-    assert found.kind == Kind.TEXTURE
-    assert not found.missing
+def test_search_returns_the_whole_asset(index: Index, library: Path):
+    index.update(library, found(library))
+    (metal,) = index.search("metal")
+    folder = library / "materials" / "metal_053B"
+    assert metal.path == folder
+    assert metal.kind == Kind.MATERIAL
+    assert metal.cover == folder / "Metal053B.png"
+    assert metal.size_bytes == len(b"preview") + 5 + 3
+    assert metal.modified_time == max(file.stat().st_mtime for file in folder.iterdir())
+    assert not metal.missing
+    (chair,) = index.search("chair")
+    assert chair.cover is None
 
 
 def test_index_survives_closing(tmp_path: Path, library: Path):
     path = tmp_path / "index.sqlite"
     first = Index(path)
     first.add_root(library)
-    first.update(library, scan(library).files)
+    first.update(library, found(library))
     first.close()
     second = Index(path)
     assert second.roots() == [library]
-    assert paths(second, "sunset") == ["sky_sunset.hdr"]
+    assert names(second, "sunset") == ["sky_sunset"]
     second.close()
 
 
