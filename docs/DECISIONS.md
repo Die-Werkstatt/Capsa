@@ -46,3 +46,15 @@ One entry per non-obvious choice. Newest at the bottom.
 **Alternatives:** Sidecar files next to each asset: they travel with the asset, but write into the library. A JSON file: simple, but every search would read all of it.
 **Trade-off:** Tags live only in the index. Move an asset folder to another machine and its tags stay behind. Missing rows pile up until something cleans them, which nothing does yet.
 
+## 2026-11-12: What the checks on Sandro's machine showed
+**Decision:** Build for the library as it is: 516 files, 9.93 GB, one root on a fixed disk, mostly ambientCG materials and HDRIs. No Component Builder assets, no `.tx`, no Houdini-written USD. Full results: issue #11.
+**Why:** usd-core 26.11, OpenImageIO 3.2.2.0 and FTS5 all work on Windows 11 (Python 3.14.5). A walk of the whole library takes 0.02 s. A 256 px thumbnail of an 8k `.exr` or `.hdr` takes 1.4 to 1.9 s. OpenImageIO cannot read `.rat`. A Houdini 21 Component Builder asset names its thumbnail in `assetInfo` (`previews.thumbnails.default.defaultImage`, here `./thumbnail.png`).
+**Alternatives:** Build Component Builder detection first, as the interface spec proposes: nothing in the library would use it.
+**Trade-off:** Rules fitted to one library. A different folder layout needs new rules.
+
+## 2026-11-12: A texture-set folder is one asset
+**Decision:** A folder holding two or more different texture maps is one material, named after the folder, with everything directly in it. Every other file is its own asset. A `.rat` copy joins the file it was made from. A lone `.exr` counts as an HDRI.
+**Why:** It matches the library: a material is a folder of maps (`metal_053B/`), an HDRI is one file with an optional `.rat` beside it. No file is written into the library.
+**Alternatives:** Every file an asset: 450 material files as 450 tiles. Every lowest folder an asset: `hdri/exterior/4k` would be one tile holding all its HDRIs. A sidecar file per asset: writes into the library.
+**Trade-off:** Two sets in one folder merge into one material. Resolutions of one material in sibling folders show as separate materials. An `.exr` that is not an HDRI is mislabelled until the image's proportions are read.
+

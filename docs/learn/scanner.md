@@ -14,7 +14,7 @@ By the end of the file name. `chair.usd` ends in `.usd`, so it is USD. `smoke.00
 
 A name that matches nothing is `other`. It is still listed, so nothing in your library is invisible.
 
-One gap: an `.exr` can be a texture or an HDRI, and the name does not say which. For now every `.exr` is a texture.
+One gap: an `.exr` can be a texture or an HDRI, and the name does not say which. The scanner calls every `.exr` a texture; the grouping into assets decides later ([assets.md](assets.md)).
 
 ## What comes back
 

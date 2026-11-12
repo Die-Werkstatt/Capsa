@@ -13,6 +13,7 @@ class Kind(Enum):
     OBJ = "obj"
     TEXTURE = "texture"
     HDRI = "hdri"
+    MATERIAL = "material"
     CACHE = "cache"
     HDA = "hda"
     OTHER = "other"
@@ -35,7 +36,9 @@ SUFFIXES: dict[str, Kind] = {
     ".jpeg": Kind.TEXTURE,
     ".tif": Kind.TEXTURE,
     ".tiff": Kind.TEXTURE,
+    ".rat": Kind.TEXTURE,
     ".hdr": Kind.HDRI,
+    ".mtlx": Kind.MATERIAL,
     ".bgeo": Kind.CACHE,
     ".bgeo.sc": Kind.CACHE,
     ".vdb": Kind.CACHE,
