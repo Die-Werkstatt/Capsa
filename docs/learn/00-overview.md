@@ -11,7 +11,7 @@ Your assets stay where they are. Capsa walks through the folders you point it at
 - **Thumbnails** are small preview images Capsa makes once and keeps, like a texture cache.
 - **The interface** shows the index as a grid you can search and filter.
 
-None of these exist yet. The repository holds an empty Python package, one test, and the checks that run on every change.
+Only the scanner exists so far: see [scanner.md](scanner.md).
 
 ## What Capsa never does
 

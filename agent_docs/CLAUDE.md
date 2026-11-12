@@ -3,8 +3,8 @@
 Asset library for VFX/3D: a personal tool for Sandro's Houdini/Solaris (USD,
 Karma) workflow that indexes existing asset folders and finds assets fast. It
 is also a learning project: Sandro must be able to explain and extend every
-part without AI. Phase 1 has started; the package holds no feature yet. The
-brief is `docs/BRIEF.md`.
+part without AI. Phase 1 has started: the package scans a folder. The brief
+is `docs/BRIEF.md`.
 
 ## Stack
 
@@ -17,7 +17,7 @@ brief is `docs/BRIEF.md`.
 
 ## Project structure
 
-- `src/capsa/`: the package.
+- `src/capsa/`: the package. `scanner.py` lists the files under a library root.
 - `tests/`: unit tests. `tests/fixtures/` will hold real files from Sandro's
   machine (#11); Houdini is not available in Claude's environment.
 - `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,

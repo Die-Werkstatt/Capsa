@@ -20,7 +20,7 @@ One entry per non-obvious choice. Newest at the bottom.
 **Decision:** Capsa's core is a Python 3.13 package in `src/capsa/`. uv installs Python and the dependencies and keeps their exact versions in `uv.lock`.
 **Why:** The libraries the brief names have Windows wheels for 3.13: usd-core 26.11 supports 3.11 to 3.14, OpenImageIO 3.2.2 supports 3.9 to 3.15 (PyPI, checked 2026-11-11). Python is also Houdini's scripting language. uv is one program for what otherwise takes three (a Python installer, venv, pip), and the same two commands work on Windows and Linux.
 **Alternatives:** pip with `requirements.txt`, as in Kompass: no lockfile, and a virtual environment to manage by hand. Python 3.11, to match Houdini 20.5 and 21.0: not needed, a Houdini panel runs in Houdini's own Python and talks to Capsa from outside.
-**Trade-off:** uv has to be installed once on every machine. 
+**Trade-off:** uv has to be installed once on every machine.
 
 ## 2026-11-12: The roadmap lives in `agent_docs/ROADMAP.md`
 **Decision:** One roadmap, at the path the project template and `.claude/suite.json` use.
@@ -29,8 +29,14 @@ One entry per non-obvious choice. Newest at the bottom.
 **Trade-off:** Capsa and Laterna differ here.
 
 ## 2026-11-12: The window is a pywebview window
-**Decision:** Capsa's interface is a web page shown in a frameless pywebview window. It is built and tested as a browser tab first; the window is added around it.
+**Decision:** Capsa opens in its own frameless pywebview window, never as a browser app. The interface inside the window is a web page.
 **Why:** The interface spec asks for one frameless window with its own title bar, which a browser tab cannot be. pywebview is one Python package: `frameless=True`, a drag region, and `minimize()` and `maximize()` (https://pywebview.flowrl.com/api/). On Windows it draws the page with Edge WebView2. Chosen by Sandro (2026-11-12, #7).
 **Alternatives:** A browser tab only, as in Laterna: no title bar of its own. Tauri with the Python backend as a sidecar: also WebView2 on Windows, so a 3D preview renders the same, but it adds Rust, the C++ Build Tools and a PyInstaller build.
 **Trade-off:** No installer comes with it. On Linux pywebview needs Qt or GTK, untested. A preview that matches Karma would need Hydra, which neither option provides.
+
+## 2026-11-12: The scanner reads names, sizes and dates only
+**Decision:** A scan lists every file under a library root with its size, modified time and a kind taken from the file name. It opens no file. An `.exr` counts as a texture and an `.hdr` as an HDRI.
+**Why:** Names, sizes and dates come from the folder listing, which is fast and cannot damage a file. Telling an HDRI from a texture needs the image's size or its folder, which belongs to asset detection (#15).
+**Alternatives:** Open each file during the scan to read its contents: slow on a large library, and one broken file could stop the scan.
+**Trade-off:** HDRIs saved as `.exr` show up as textures until asset detection exists.
 
