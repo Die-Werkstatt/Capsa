@@ -2,3 +2,12 @@
 *.png binary
 *.jpg binary
 *.ico binary
+*.exr binary
+*.tx binary
+*.hdr binary
+*.tif binary
+*.tiff binary
+*.usdc binary
+*.usdz binary
+*.abc binary
+*.fbx binary

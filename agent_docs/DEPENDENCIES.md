@@ -13,6 +13,14 @@ the reason, so the same discussion does not happen twice.
 
 ## Current inventory
 
+| Dependency | Kind | Why |
+|---|---|---|
+| pytest | dev | Runs the unit tests. |
+| ruff | dev | Lint and format. Pinned to 0.16.7, the version aislop 0.16.0 runs. |
+| uv_build | build | Builds the `capsa` package from `src/`; uv's own backend. |
+| three.js r128 (cdnjs) | website, prototype | The 3D box on `docs/website` and the material sphere in `docs/design/prototype.html`. Loaded at runtime. |
+| Google Fonts | website, prototype | Michroma, IBM Plex and JetBrains Mono, loaded at runtime. Placeholders until the font is chosen (#12). |
+
 ## Removed
 
 | Dependency | Removed in | Why |

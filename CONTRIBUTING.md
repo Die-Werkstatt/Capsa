@@ -34,7 +34,7 @@ tell: chore.
 
 ## Checks
 
-Run `python3 .claude/suite-check.py` before opening a pull request. CI runs
+Run `uv run python3 .claude/suite-check.py` before opening a pull request. CI runs the unit tests,
 CodeQL, Scorecard, the label gate and the template guard on every pull request.
 
 ## Template-managed files

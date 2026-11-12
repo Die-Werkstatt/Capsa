@@ -11,6 +11,10 @@
         "run": "npx --yes aislop@0.16.0 ci"
       },
       {
+        "name": "unit tests",
+        "run": "uv run --locked pytest -q"
+      },
+      {
         "name": "template conflicts",
         "run": "! git grep -nE '^(<<<<<<< before updating|>>>>>>> after updating)$'"
       }

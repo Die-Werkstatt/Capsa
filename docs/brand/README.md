@@ -1,4 +1,4 @@
-# Capsa — Brand
+# Capsa: Brand
 
 <p align="center">
   <picture>

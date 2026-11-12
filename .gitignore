@@ -19,3 +19,16 @@ CLAUDE.local.md
 
 # Bytecode from the .claude/ health runner, which every project runs
 __pycache__/
+
+# Python
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend
+node_modules/
+dist/
+
+# Capsa's own data, when run from the repo
+*.sqlite
+*.sqlite-*
