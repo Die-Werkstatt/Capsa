@@ -120,18 +120,21 @@ def test_gloss_mask_roughness_folder_is_a_material(tmp_path: Path):
 
 
 def test_numbered_frames_are_one_sequence(tmp_path: Path):
-    names = [f"caustics_02b/caustics_{n:04}.png" for n in range(1001, 1241)]
-    (asset,) = make(tmp_path, [*names, "caustics_02b/caustics_1001.png.rat"])
+    # Sandro's caustics folder: 240 frames numbered from 0000.
+    stem = "caustics_02b/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_"
+    names = [f"{stem}{n:04}.jpg" for n in range(240)]
+    (asset,) = make(tmp_path, [*names, f"{stem}0000.jpg.rat"])
     assert asset.kind == Kind.SEQUENCE
-    assert asset.name == "caustics"
-    assert asset.path == tmp_path / "caustics_02b" / "caustics_####.png"
-    assert asset.cover == tmp_path / "caustics_02b" / "caustics_1001.png"
+    assert asset.name == "02B_Caribbean_Caustics_Deep_FREE_SAMPLE"
+    assert asset.path == tmp_path / f"{stem}####.jpg"
+    assert asset.cover == tmp_path / f"{stem}0000.jpg"
     assert len(asset.files) == 241
 
 
 def test_sequence_without_prefix_takes_folder_name(tmp_path: Path):
-    (asset,) = make(tmp_path, [f"droplets/{n}.exr" for n in range(1, 4)])
-    assert (asset.kind, asset.name) == (Kind.SEQUENCE, "droplets")
+    # Sandro's DustScratches_01 folder holds 01.png to 06.png.
+    (asset,) = make(tmp_path, [f"DustScratches_01/{n:02}.png" for n in range(1, 7)])
+    assert (asset.kind, asset.name) == (Kind.SEQUENCE, "DustScratches_01")
 
 
 def test_numbers_with_gaps_stay_single_files(tmp_path: Path):
