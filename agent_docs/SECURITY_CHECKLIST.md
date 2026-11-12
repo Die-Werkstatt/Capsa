@@ -15,6 +15,8 @@ The threat surface of this project and how each part is held. Pair with
 - [ ] Library files are untrusted input: a broken or hostile USD, EXR or image
       file must fail that one asset, never the scan.
 - [ ] Capsa opens library files for reading only.
+- [ ] Search text reaches SQLite as a bound parameter with every word quoted,
+      never pasted into the SQL.
 - [ ] The local server, once it exists, listens on `127.0.0.1` only and serves
       a file only from a library root or the thumbnail cache.
 
