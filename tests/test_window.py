@@ -34,6 +34,7 @@ def api_for(tmp_path: Path) -> Api:
 def test_search_gives_the_page_plain_values(tmp_path):
     chair, sky = api_for(tmp_path).search("")
     source = tmp_path / "library" / "chair.obj"
+    assert isinstance(chair.pop("added"), float)
     assert chair == {
         "name": "chair",
         "kind": "obj",
@@ -44,6 +45,7 @@ def test_search_gives_the_page_plain_values(tmp_path):
         "missing": False,
         "favourite": False,
         "tags": [],
+        "collections": [],
     }
     assert sky["kind"] == "hdri"
 
@@ -64,7 +66,7 @@ def test_unreadable_cover_gives_no_thumbnail(tmp_path):
 
 
 def test_page_files_ship_with_the_package():
-    for name in ("index.html", "style.css", "app.js"):
+    for name in ("index.html", "style.css", "app.js", "details.js", "sheet.js", "ui.js"):
         assert (PAGE.parent / name).is_file()
 
 
@@ -133,3 +135,33 @@ def test_tags_come_back_as_the_index_spells_them(tmp_path):
     (found,) = api.search("dining")
     assert found["favourite"]
     assert found["tags"] == ["dining room"]
+
+
+def test_collections_through_the_bridge(tmp_path):
+    api = api_for(tmp_path)
+    chair = str(tmp_path / "library" / "chair.obj")
+    assert api.create_collection("Props") is None
+    assert "already" in api.create_collection("Props")
+    api.add_to_collection(chair, "Props")
+    assert api.collections() == ["Props"]
+    (found,) = api.search("chair")
+    assert found["collections"] == ["Props"]
+    api.remove_from_collection(chair, "Props")
+    api.delete_collection("Props")
+    assert api.collections() == []
+
+
+def test_open_window_serves_scripts_as_javascript(monkeypatch, tmp_path):
+    # Windows' registry can map .js to text/plain, and the browser refuses a module sent so.
+    import mimetypes
+
+    from capsa import window
+
+    monkeypatch.setattr(window.webview, "create_window", lambda *args, **kwargs: None)
+    monkeypatch.setattr(window.webview, "start", lambda: None)
+    mimetypes.add_type("text/plain", ".js")
+    try:
+        window.open_window(tmp_path)
+        assert mimetypes.guess_type("app.js")[0] == "text/javascript"
+    finally:
+        mimetypes.add_type("text/javascript", ".js")

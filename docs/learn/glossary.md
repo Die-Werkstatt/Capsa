@@ -12,6 +12,10 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Cover:** the picture shown on an asset's tile.
 
+**Collection:** a named set of assets you put together by hand, such as the props of one shot. An asset can be in several.
+
+**Context manager:** an object used with `with`. It runs set-up code when the block starts and clean-up code when it ends, also after an error. `with Index(path) as index:` closes the index file.
+
 **Command line:** a program you run by typing its name and some words in a terminal, such as `capsa scan`. No window.
 
 **Data folder:** the folder where Capsa keeps what it writes: the index and the thumbnails. On Windows `%LOCALAPPDATA%\Capsa`.
@@ -39,6 +43,10 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 **Image sequence:** one image per frame, numbered: `caustics_1001.png`, `caustics_1002.png` and so on. Written `caustics_####.png`; Houdini writes `caustics_$F4.png`.
 
 **Lockfile (`uv.lock`):** the exact version of every dependency, written by uv. Like caching a simulation to disk: everybody who opens the project gets the same result, not whatever is newest that day.
+
+**MIME type:** the label a server sends with a file to say what it is, such as `text/javascript` or `image/jpeg`. The browser trusts the label, not the file name.
+
+**Module (JavaScript):** a script that takes pieces from other scripts with `import` and offers its own with `export`. Loaded with `<script type="module">`.
 
 **OpenImageIO:** the library that reads and writes image files, the one behind `oiiotool` and `iconvert`. Capsa's first dependency.
 

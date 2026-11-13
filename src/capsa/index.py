@@ -1,13 +1,15 @@
 """Capsa's notebook: one SQLite file that remembers the assets a scan found."""
 
 import sqlite3
+import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Self
 
 from capsa.assets import Asset
 from capsa.scanner import Kind
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # What Sandro marks by hand. Keyed by root and path, not by asset id: a rescan
 # that forgets an asset must not forget its marks, and they return with the path.
@@ -22,6 +24,20 @@ CREATE TABLE tags (
     path TEXT NOT NULL,
     tag TEXT NOT NULL,
     PRIMARY KEY (root_id, path, tag)
+);
+"""
+
+# Collections are made by hand too, and keyed the same way.
+COLLECTIONS = """
+CREATE TABLE collections (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+CREATE TABLE collection_members (
+    collection_id INTEGER NOT NULL REFERENCES collections (id),
+    root_id INTEGER NOT NULL REFERENCES roots (id),
+    path TEXT NOT NULL,
+    PRIMARY KEY (collection_id, root_id, path)
 );
 """
 
@@ -40,6 +56,7 @@ CREATE TABLE assets (
     kind TEXT NOT NULL,
     cover TEXT,
     missing INTEGER NOT NULL DEFAULT 0,
+    added REAL NOT NULL, -- when a scan first found it, in seconds since 1970
     UNIQUE (root_id, path)
 );
 CREATE TABLE files (
@@ -54,6 +71,7 @@ CREATE INDEX files_by_asset ON files (asset_id);
 CREATE VIRTUAL TABLE assets_search USING fts5 (path, tags);
 """
     + MARKS
+    + COLLECTIONS
 )
 
 # Brings an index of version 2 up to version 3 without a rescan. An FTS5 table
@@ -67,6 +85,17 @@ INSERT INTO assets_search (rowid, path, tags) SELECT id, path, '' FROM assets;
     + MARKS
 )
 
+# Version 3 to 4. Assets already in the index count as found at the upgrade.
+FROM_VERSION_3 = (
+    """
+ALTER TABLE assets ADD COLUMN added REAL NOT NULL DEFAULT 0;
+UPDATE assets SET added = CAST(strftime('%s', 'now') AS REAL);
+"""
+    + COLLECTIONS
+)
+
+UPGRADES = {2: FROM_VERSION_2, 3: FROM_VERSION_3}
+
 
 @dataclass(frozen=True)
 class IndexedAsset:
@@ -79,6 +108,8 @@ class IndexedAsset:
     missing: bool
     favourite: bool
     tags: tuple[str, ...]
+    added: float  # when a scan first found it, in seconds since 1970
+    collections: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -96,11 +127,13 @@ class Index:
         version = self._db.execute("PRAGMA user_version").fetchone()[0]
         if version == 0:
             self._create()
-        elif version == 2:
+        # An older file is brought up one version at a time, each step all or nothing.
+        while version in UPGRADES:
             self._db.executescript(
-                f"BEGIN; {FROM_VERSION_2} PRAGMA user_version = {SCHEMA_VERSION}; COMMIT;"
+                f"BEGIN; {UPGRADES[version]} PRAGMA user_version = {version + 1}; COMMIT;"
             )
-        elif version != SCHEMA_VERSION:
+            version += 1
+        if version not in (0, SCHEMA_VERSION):
             self._db.close()
             raise RuntimeError(f"{path} is an index of version {version}, not {SCHEMA_VERSION}.")
 
@@ -115,6 +148,13 @@ class Index:
 
     def close(self) -> None:
         self._db.close()
+
+    # `with Index(path) as index:` closes the file however the block ends.
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exception) -> None:
+        self.close()
 
     def add_root(self, root: Path) -> None:
         # The index must never end up inside the library it describes.
@@ -159,8 +199,9 @@ class Index:
                 before = known.pop(path, None)
                 if before is None:
                     cursor = self._db.execute(
-                        "INSERT INTO assets (root_id, path, name, kind, cover) VALUES (?, ?, ?, ?, ?)",
-                        (root_id, path, asset.name, asset.kind.value, cover),
+                        "INSERT INTO assets (root_id, path, name, kind, cover, added)"
+                        " VALUES (?, ?, ?, ?, ?, ?)",
+                        (root_id, path, asset.name, asset.kind.value, cover, time.time()),
                     )
                     asset_id = cursor.lastrowid
                     self._db.execute(
@@ -217,7 +258,7 @@ class Index:
         words = ['"' + word.replace('"', '""') + '"*' for word in text.split()]
         select = (
             "SELECT assets.root_id, roots.path, assets.path, name, assets.kind, cover, missing,"
-            " SUM(files.size_bytes), MAX(files.modified_time), favourites.path IS NOT NULL"
+            " SUM(files.size_bytes), MAX(files.modified_time), favourites.path IS NOT NULL, added"
             " FROM assets"
             " JOIN roots ON roots.id = assets.root_id"
             " JOIN files ON files.asset_id = assets.id"
@@ -238,6 +279,12 @@ class Index:
             "SELECT root_id, path, tag FROM tags ORDER BY tag"
         ):
             tags.setdefault((root_id, path), []).append(tag)
+        members: dict[tuple[int, str], list[str]] = {}
+        for root_id, path, name in self._db.execute(
+            "SELECT root_id, path, name FROM collection_members"
+            " JOIN collections ON collections.id = collection_id ORDER BY name"
+        ):
+            members.setdefault((root_id, path), []).append(name)
         return [
             IndexedAsset(
                 name,
@@ -249,9 +296,53 @@ class Index:
                 bool(missing),
                 bool(favourite),
                 tuple(tags.get((root_id, path), ())),
+                added,
+                tuple(members.get((root_id, path), ())),
             )
-            for root_id, root, path, name, kind, cover, missing, size_bytes, modified_time, favourite in rows
+            for root_id, root, path, name, kind, cover, missing, size_bytes, modified_time, favourite, added in rows
         ]
+
+    def collections(self) -> list[str]:
+        return [name for (name,) in self._db.execute("SELECT name FROM collections ORDER BY name")]
+
+    def create_collection(self, name: str) -> None:
+        """Make an empty collection. A name in use, or a blank one, is refused."""
+        name = " ".join(name.split())
+        if not name:
+            raise ValueError("A collection needs a name.")
+        try:
+            with self._db:
+                self._db.execute("INSERT INTO collections (name) VALUES (?)", (name,))
+        except sqlite3.IntegrityError:
+            raise ValueError(f"There is already a collection named {name}.") from None
+
+    def delete_collection(self, name: str) -> None:
+        """Forget the collection. Its assets stay in the index."""
+        with self._db:
+            self._db.execute(
+                "DELETE FROM collection_members"
+                " WHERE collection_id = (SELECT id FROM collections WHERE name = ?)",
+                (name,),
+            )
+            self._db.execute("DELETE FROM collections WHERE name = ?", (name,))
+
+    def add_to_collection(self, path: Path, name: str) -> None:
+        root_id, relative = self._locate(path)
+        with self._db:
+            self._db.execute(
+                "INSERT OR IGNORE INTO collection_members (collection_id, root_id, path)"
+                " SELECT id, ?, ? FROM collections WHERE name = ?",
+                (root_id, relative, name),
+            )
+
+    def remove_from_collection(self, path: Path, name: str) -> None:
+        root_id, relative = self._locate(path)
+        with self._db:
+            self._db.execute(
+                "DELETE FROM collection_members WHERE root_id = ? AND path = ?"
+                " AND collection_id = (SELECT id FROM collections WHERE name = ?)",
+                (root_id, relative, name),
+            )
 
     def set_favourite(self, path: Path, favourite: bool) -> None:
         root_id, relative = self._locate(path)

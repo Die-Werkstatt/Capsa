@@ -2,10 +2,10 @@
 // a sidebar of groups, a grid of tiles and the details of the selected asset.
 // Thumbnails load one by one after the tiles are drawn, so the grid appears at once.
 
-const KINDS = {
-  material: "Material", hdri: "HDRI", texture: "Texture", sequence: "Sequence",
-  usd: "USD", alembic: "Alembic", fbx: "FBX", obj: "OBJ", cache: "Cache", hda: "HDA", other: "Other",
-};
+import { drawDetails } from "./details.js";
+import { openSheet } from "./sheet.js";
+import { KINDS, askText, button, closeMenu, copyPath, explore, icon, openMenu, say, size, star } from "./ui.js";
+
 // Sidebar groups: [id, label, kinds]. "All" has no kinds and takes everything.
 const GROUPS = [
   ["all", "All", []],
@@ -17,9 +17,9 @@ const GROUPS = [
   ["caches", "Caches", ["cache"]],
 ];
 
-// Recent is the newest file first: the index keeps no date of when Capsa first saw an asset.
+// Recent: the asset a scan found last comes first; among those found together, the newest file.
 const SORTS = {
-  recent: (a, b) => b.modified - a.modified,
+  recent: (a, b) => b.added - a.added || b.modified - a.modified,
   name: (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }),
   size: (a, b) => b.size - a.size,
 };
@@ -28,11 +28,10 @@ const nav = document.getElementById("nav");
 const grid = document.getElementById("grid");
 const count = document.getElementById("count");
 const title = document.getElementById("title");
-const details = document.getElementById("details");
 const search = document.getElementById("search");
-const toast = document.getElementById("toast");
 
 let assets = []; // the answer to the last search
+let collections = []; // names, including empty collections
 let group = "all";
 let selected = null; // path of the selected asset
 let order = "recent";
@@ -40,24 +39,37 @@ let list = false; // list rows instead of the grid
 let drawn = 0; // which drawing the tiles belong to, so an old thumbnail loop stops
 const thumbnails = new Map(); // cover path -> data URL, or null when it cannot be read
 
+const WEEK = 7 * 24 * 60 * 60; // seconds
+
+// A collection's group id is "collection:" and its name.
 function inGroup(asset, id) {
   if (id === "missing") return asset.missing;
   if (id === "favourites") return asset.favourite;
+  if (id === "week") return asset.added >= Date.now() / 1000 - WEEK;
+  if (id.startsWith("collection:")) return asset.collections.includes(id.slice(11));
   const kinds = GROUPS.find((g) => g[0] === id)[2];
   return kinds.length === 0 || kinds.includes(asset.kind);
 }
 
 function label(id) {
-  return id === "missing" ? "Missing files" : GROUPS.find((g) => g[0] === id)[1];
+  if (id === "missing") return "Missing files";
+  if (id === "week") return "Added this week";
+  if (id.startsWith("collection:")) return id.slice(11);
+  return GROUPS.find((g) => g[0] === id)[1];
 }
 
 let asked = 0;
 async function find(text) {
   const ask = ++asked;
-  const answer = await window.pywebview.api.search(text);
+  const [answer, names] = await Promise.all([
+    window.pywebview.api.search(text),
+    window.pywebview.api.collections(),
+  ]);
   if (ask !== asked) return;
   assets = answer;
+  collections = names;
   if (group === "missing" && !assets.some((a) => a.missing)) group = "all";
+  if (group.startsWith("collection:") && !collections.includes(label(group))) group = "all";
   draw();
 }
 
@@ -69,17 +81,23 @@ function draw() {
   title.textContent = label(group);
   count.textContent = visible.length;
   grid.replaceChildren(...visible.map(tile));
-  drawDetails();
+  showDetails();
   loadThumbnails(ask);
 }
 
 function drawNav() {
-  const item = (id, extra) => {
+  const item = (id, extra, note) => {
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.group = id;
     const name = document.createElement("b");
     name.textContent = label(id);
+    if (note) {
+      const small = document.createElement("span");
+      small.className = "note";
+      small.textContent = note;
+      name.append(small);
+    }
     const number = document.createElement("span");
     number.className = "number";
     number.textContent = assets.filter((a) => inGroup(a, id)).length;
@@ -100,9 +118,54 @@ function drawNav() {
     div.append(head, list);
     return div;
   };
-  const sections = [section("Library", GROUPS.map((g) => item(g[0])))];
+  const add = button("+ New collection", "link", () => askText(add, "Collection name", createCollection));
+  const newCollection = document.createElement("li");
+  newCollection.append(add);
+  const sections = [
+    section("Library", GROUPS.map((g) => item(g[0]))),
+    section("Collections", [
+      ...collections.map((name) => item(`collection:${name}`)),
+      item("week", "", "Auto"),
+      newCollection,
+    ]),
+  ];
   if (assets.some((a) => a.missing)) sections.push(section("Needs attention", [item("missing", "bad")]));
   nav.replaceChildren(...sections);
+}
+
+async function createCollection(name) {
+  const problem = name && (await window.pywebview.api.create_collection(name));
+  if (problem) say(problem);
+  collections = await window.pywebview.api.collections();
+  drawNav();
+}
+
+function assetMenu(asset, x, y) {
+  const rows = [
+    [asset.favourite ? "Remove from Favourites" : "Add to Favourites", "F", () => toggleFavourite(asset)],
+    "-",
+    "Collections",
+  ];
+  if (!collections.length) rows.push(["No collections yet", "", null]);
+  for (const name of collections) {
+    const member = asset.collections.includes(name);
+    rows.push([`${member ? "\u2713 " : ""}${name}`, "", () => toggleMember(asset, name, !member)]);
+  }
+  rows.push(
+    "-",
+    ["Copy path", "Ctrl C", () => copyPath(asset)],
+    ["Show in Explorer", "Ctrl E", asset.missing ? null : () => explore(asset)],
+  );
+  openMenu(rows, x, y);
+}
+
+async function toggleMember(asset, name, member) {
+  if (member) await window.pywebview.api.add_to_collection(asset.path, name);
+  else await window.pywebview.api.remove_from_collection(asset.path, name);
+  asset.collections = member
+    ? [...asset.collections, name].sort()
+    : asset.collections.filter((n) => n !== name);
+  draw();
 }
 
 function tile(asset) {
@@ -114,7 +177,7 @@ function tile(asset) {
   const picture = document.createElement("div");
   picture.className = asset.path === selected ? "picture on" : "picture";
   showThumbnail(picture, asset);
-  picture.append(star(asset));
+  picture.append(star(asset, toggleFavourite));
   const name = document.createElement("span");
   name.className = "name";
   name.textContent = asset.name;
@@ -141,71 +204,14 @@ async function loadThumbnails(ask) {
     thumbnails.set(asset.cover, url);
     if (ask !== drawn) return;
     showThumbnail(element.firstChild, asset);
-    if (asset.path === selected) showThumbnail(details.querySelector(".preview"), asset);
+    if (asset.path === selected) showThumbnail(document.querySelector("#details .preview"), asset);
   }
 }
 
-function drawDetails() {
+
+function showDetails() {
   const asset = assets.find((a) => a.path === selected);
-  if (!asset) {
-    const none = document.createElement("p");
-    none.className = "none";
-    none.textContent = "Select an asset";
-    details.replaceChildren(none);
-    return;
-  }
-  const preview = document.createElement("div");
-  preview.className = "preview";
-  showThumbnail(preview, asset);
-  const name = document.createElement("span");
-  name.className = "big-name";
-  name.textContent = asset.name;
-  const head = document.createElement("div");
-  head.className = "name-row";
-  head.append(name, star(asset));
-  const rows = document.createElement("div");
-  rows.className = "rows";
-  const row = (key, value, bad) => {
-    const k = document.createElement("span");
-    k.textContent = key;
-    const v = document.createElement("span");
-    v.textContent = value;
-    v.title = value;
-    if (bad) v.className = "bad";
-    rows.append(k, v);
-  };
-  row("Type", KINDS[asset.kind]);
-  row("Size", size(asset.size));
-  row("Modified", new Date(asset.modified * 1000).toLocaleDateString());
-  row("Path", asset.path);
-  if (asset.missing) row("Status", "Missing", true);
-  const actions = document.createElement("div");
-  actions.className = "actions";
-  const copy = button("Copy path", "primary", () => copyPath(asset));
-  const explorer = button("Show in Explorer", "", () =>
-    window.pywebview.api.show_in_explorer(asset.kind === "sequence" ? asset.cover : asset.path),
-  );
-  explorer.disabled = asset.missing;
-  actions.append(copy, explorer);
-  details.replaceChildren(preview, head, rows, tagList(asset), actions);
-}
-
-// Icons are <template>s in index.html; each use takes a copy.
-function icon(id) {
-  return document.getElementById(id).content.cloneNode(true);
-}
-
-function star(asset) {
-  const element = document.createElement("span");
-  element.className = asset.favourite ? "star on" : "star";
-  element.dataset.star = "";
-  element.title = asset.favourite ? "Remove from Favourites (F)" : "Add to Favourites (F)";
-  element.append(icon("star-icon"));
-  element.onclick = (event) => {
-    event.stopPropagation();
-    toggleFavourite(asset);
-  };
-  return element;
+  drawDetails(asset, asset && thumbnails.get(asset.cover), toggleFavourite);
 }
 
 async function toggleFavourite(asset) {
@@ -214,97 +220,12 @@ async function toggleFavourite(asset) {
   draw();
 }
 
-function tagList(asset) {
-  const list = document.createElement("div");
-  list.className = "tags";
-  for (const tag of asset.tags) {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "tag";
-    chip.title = `Remove ${tag}`;
-    chip.textContent = tag;
-    chip.onclick = async () => {
-      asset.tags = await window.pywebview.api.remove_tag(asset.path, tag);
-      drawDetails();
-    };
-    list.append(chip);
-  }
-  const add = document.createElement("button");
-  add.type = "button";
-  add.className = "tag add";
-  add.id = "add-tag";
-  add.textContent = "+ tag";
-  add.onclick = () => editTag(add, asset);
-  list.append(add);
-  return list;
-}
-
-function editTag(button, asset) {
-  const input = document.createElement("input");
-  input.className = "tag-input";
-  input.setAttribute("aria-label", "New tag");
-  button.replaceWith(input);
-  input.focus();
-  let done = false;
-  const finish = async (keep) => {
-    if (done) return;
-    done = true;
-    if (keep && input.value.trim()) {
-      asset.tags = await window.pywebview.api.add_tag(asset.path, input.value);
-    }
-    drawDetails();
-  };
-  input.addEventListener("keydown", (event) => {
-    event.stopPropagation();
-    if (event.key === "Enter") finish(true);
-    if (event.key === "Escape") finish(false);
-  });
-  input.addEventListener("blur", () => finish(true));
-}
-
-function button(text, extra, onClick) {
-  const element = document.createElement("button");
-  element.type = "button";
-  element.className = ["action", extra].join(" ").trim();
-  element.textContent = text;
-  element.onclick = onClick;
-  return element;
-}
-
-function size(bytes) {
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1000 && unit < units.length - 1) {
-    value /= 1000;
-    unit += 1;
-  }
-  return `${unit === 0 ? value : value.toFixed(1)} ${units[unit]}`;
-}
-
-async function copyPath(asset) {
-  try {
-    await navigator.clipboard.writeText(asset.path);
-    say(`Copied ${asset.path}`);
-  } catch {
-    say("Could not copy the path");
-  }
-}
-
-let hiding;
-function say(text) {
-  toast.textContent = text;
-  toast.classList.add("on");
-  clearTimeout(hiding);
-  hiding = setTimeout(() => toast.classList.remove("on"), 1900);
-}
-
 function select(path) {
   selected = path;
   for (const element of grid.children) {
     element.firstChild.classList.toggle("on", element.dataset.path === path);
   }
-  drawDetails();
+  showDetails();
 }
 
 const layout = document.getElementById("layout");
@@ -335,82 +256,54 @@ grid.addEventListener("click", (event) => {
   const element = event.target.closest(".tile");
   if (element) select(element.dataset.path);
 });
-
-// Settings sheet: library folders, Add folder, Rescan all.
-const sheet = document.getElementById("sheet");
-const settings = document.getElementById("settings");
-const progress = document.getElementById("progress");
-const rescanButton = document.getElementById("rescan");
-const addButton = document.getElementById("add-folder");
-
-function openSheet(open) {
-  sheet.hidden = !open;
-  settings.classList.toggle("on", open);
-  if (open) drawSheet();
-}
-
-async function drawSheet() {
-  const folders = await window.pywebview.api.folders();
-  document.getElementById("folders").replaceChildren(
-    ...folders.map((folder) => {
-      const row = document.createElement("div");
-      row.className = "folder";
-      const path = document.createElement("span");
-      path.textContent = folder.path;
-      path.title = folder.path;
-      const number = document.createElement("span");
-      number.textContent = folder.assets;
-      row.append(path, number);
-      return row;
-    }),
+grid.addEventListener("contextmenu", (event) => {
+  const element = event.target.closest(".tile");
+  if (!element) return;
+  event.preventDefault();
+  select(element.dataset.path);
+  assetMenu(assets.find((a) => a.path === element.dataset.path), event.clientX, event.clientY);
+});
+nav.addEventListener("contextmenu", (event) => {
+  const button = event.target.closest('[data-group^="collection:"]');
+  if (!button) return;
+  event.preventDefault();
+  const name = label(button.dataset.group);
+  openMenu(
+    [
+      [
+        "Delete collection",
+        "",
+        async () => {
+          await window.pywebview.api.delete_collection(name);
+          say(`Deleted ${name}. Its assets stay in the library.`);
+          find(search.value);
+        },
+      ],
+    ],
+    event.clientX,
+    event.clientY,
   );
-  document.getElementById("asset-count").textContent = folders.reduce((sum, f) => sum + f.assets, 0);
-}
-
-async function rescan() {
-  rescanButton.disabled = addButton.disabled = true;
-  progress.classList.add("on");
-  try {
-    await window.pywebview.api.rescan();
-  } finally {
-    progress.classList.remove("on");
-    rescanButton.disabled = addButton.disabled = false;
-  }
-  thumbnails.clear(); // a changed file has a new thumbnail under the same cover path
-  await find(search.value);
-  if (!sheet.hidden) drawSheet();
-}
-
-settings.onclick = () => openSheet(sheet.hidden);
-document.getElementById("sheet-close").onclick = () => openSheet(false);
-rescanButton.onclick = rescan;
-addButton.onclick = async () => {
-  const result = await window.pywebview.api.add_folder();
-  if (!result) return;
-  if (result.error) {
-    say(result.error);
-    return;
-  }
-  drawSheet();
-  await rescan();
-};
-
+});
 let typing;
 search.addEventListener("input", () => {
   clearTimeout(typing);
   typing = setTimeout(() => find(search.value), 150);
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !sheet.hidden) openSheet(false);
+  if (event.key === "Escape" && !closeMenu()) openSheet(false);
   const inField = event.target.closest("input, select");
   const asset = assets.find((a) => a.path === selected);
   if (!inField && asset && !event.ctrlKey && !event.altKey) {
     if (event.key === "f" || event.key === "F") toggleFavourite(asset);
     if (event.key === "t" || event.key === "T") {
       event.preventDefault();
-      const add = document.getElementById("add-tag");
-      if (add) editTag(add, asset);
+      document.getElementById("add-tag")?.click();
     }
+  }
+  if (!inField && asset && event.ctrlKey && event.key.toLowerCase() === "c") copyPath(asset);
+  if (!inField && asset && event.ctrlKey && event.key.toLowerCase() === "e" && !asset.missing) {
+    event.preventDefault();
+    explore(asset);
   }
   if (event.ctrlKey && event.key.toLowerCase() === "k") {
     event.preventDefault();
@@ -421,6 +314,11 @@ document.addEventListener("keydown", (event) => {
 document.getElementById("minimize").onclick = () => window.pywebview.api.minimize();
 document.getElementById("maximize").onclick = () => window.pywebview.api.toggle_maximize();
 document.getElementById("close").onclick = () => window.pywebview.api.close();
+
+window.addEventListener("rescanned", () => {
+  thumbnails.clear(); // a changed file has a new thumbnail under the same cover path
+  find(search.value);
+});
 
 // window.pywebview.api exists only after this event.
 window.addEventListener("pywebviewready", () => find(""));

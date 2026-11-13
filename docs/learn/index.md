@@ -10,16 +10,18 @@ Searching looks in the index, not on the drives. That is the difference between 
 
 ## What is inside
 
-Six tables. Think of each as a spreadsheet.
+Eight tables. Think of each as a spreadsheet.
 
 | Table | One row is | Columns |
 |---|---|---|
 | `roots` | a library root | its path |
-| `assets` | an asset, as `assets.py` grouped it | which root, path, name, kind, cover, missing or not |
+| `assets` | an asset, as `assets.py` grouped it | which root, path, name, kind, cover, missing or not, when a scan first found it |
 | `files` | a file that belongs to an asset | which asset, path, size, date, kind |
 | `assets_search` | the same asset, prepared for searching | its path and its tags, cut into words |
 | `favourites` | an asset you starred | which root, path |
 | `tags` | one tag on one asset | which root, path, tag |
+| `collections` | a collection you made | its name |
+| `collection_members` | one asset in one collection | which collection, root, path |
 
 Paths are stored relative to the root, so `materials/metal/metal_053B`, not `D:\Work\Library\materials\...`.
 
@@ -53,6 +55,8 @@ These are the only things in the index you make by hand: a rescan can build ever
 
 A tag is also written into `assets_search` beside the path, so `search("wood")` finds assets tagged wood.
 
+Collections work the same way: `create_collection("Props")`, `add_to_collection(path, "Props")`, `remove_from_collection`, `delete_collection`. Members are kept by root and path too. Deleting a collection forgets the collection, never an asset.
+
 ## How data flows
 
 ```
@@ -64,7 +68,8 @@ scan(root).files ──► group ──► index.update ──► assets + files
 ## Safety
 
 - `add_root` refuses a root that contains the index file itself. Capsa's data must not end up in your library.
-- The index has a version number, now 3. A file of version 2 is upgraded when Capsa opens it: the two new tables are added and the search table is built again, because an FTS5 table cannot gain a column. Nothing is rescanned. Capsa refuses a file of any other version with a clear message.
+- The index has a version number, now 4. An older file is upgraded when Capsa opens it, one version at a time, each step all or nothing. From 2 to 3 the favourites and tags tables are added and the search table is built again, because an FTS5 table cannot gain a column. From 3 to 4 the collection tables are added, and assets already in the index count as found at the moment of the upgrade. Nothing is rescanned. Capsa refuses a file of any other version with a clear message.
+- `with Index(path) as index:` closes the file when the block ends, also after an error.
 
 ## Try it
 

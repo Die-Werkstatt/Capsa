@@ -1,4 +1,5 @@
 import sqlite3
+import time
 from pathlib import Path
 
 import pytest
@@ -222,7 +223,57 @@ def test_index_of_version_2_is_upgraded(tmp_path: Path, library: Path):
     index.add_tag(library / "models" / "chair.obj", "wood")
     assert names(index, "wood") == ["chair"]
     index.close()
-    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone()[0] == 3
+    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone()[0] == 4
+
+
+def test_upgraded_assets_count_as_found_at_the_upgrade(tmp_path: Path, library: Path):
+    path = tmp_path / "index.sqlite"
+    db = sqlite3.connect(path)
+    db.executescript(VERSION_2)
+    db.execute("INSERT INTO roots (path) VALUES (?)", (str(library),))
+    db.execute(
+        "INSERT INTO assets (root_id, path, name, kind) VALUES (1, 'sky.hdr', 'sky', 'hdri')"
+    )
+    db.execute("INSERT INTO files VALUES (1, 'sky.hdr', 3, 0.0, 'hdri')")
+    db.execute("PRAGMA user_version = 2")
+    db.commit()
+    db.close()
+    before = time.time()
+    index = Index(path)
+    (sky,) = index.search("")
+    assert before - 1 <= sky.added <= time.time() + 1
+    index.close()
+
+
+def test_new_asset_records_when_it_was_found(index: Index, library: Path):
+    before = time.time()
+    index.update(library, found(library))
+    assert all(before <= asset.added <= time.time() for asset in index.search(""))
+
+
+def test_collections_hold_assets(index: Index, library: Path):
+    index.update(library, found(library))
+    chair = library / "models" / "chair.obj"
+    index.create_collection("  Kitchen  scene ")
+    index.create_collection("Props")
+    assert index.collections() == ["Kitchen scene", "Props"]
+    index.add_to_collection(chair, "Props")
+    index.add_to_collection(chair, "Kitchen scene")
+    (found_chair,) = index.search("chair")
+    assert found_chair.collections == ("Kitchen scene", "Props")
+    index.remove_from_collection(chair, "Props")
+    index.delete_collection("Kitchen scene")
+    assert index.collections() == ["Props"]
+    (found_chair,) = index.search("chair")
+    assert found_chair.collections == ()
+
+
+def test_collection_name_must_be_new_and_not_blank(index: Index):
+    index.create_collection("Props")
+    with pytest.raises(ValueError, match="already a collection"):
+        index.create_collection("Props")
+    with pytest.raises(ValueError, match="needs a name"):
+        index.create_collection("   ")
 
 
 # The tables of version 2, as PR #28 created them.

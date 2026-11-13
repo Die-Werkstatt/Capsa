@@ -6,6 +6,7 @@ No web server of our own: pywebview passes the calls between JavaScript and Pyth
 """
 
 import base64
+import mimetypes
 import subprocess
 import sys
 import threading
@@ -29,11 +30,13 @@ class Api:
         # make the same thumbnail at once. They take turns.
         self._thumbnails = threading.Lock()
 
+    # pywebview runs each call in its own thread, and an SQLite connection belongs
+    # to the thread that opened it, so every call opens the index for itself.
+    def _index(self) -> Index:
+        return Index(self._data / INDEX_NAME)
+
     def search(self, text: str) -> list[dict]:
-        # pywebview runs each call in its own thread; an SQLite connection
-        # belongs to the thread that opened it, so every call opens its own.
-        index = Index(self._data / INDEX_NAME)
-        try:
+        with self._index() as index:
             return [
                 {
                     "name": asset.name,
@@ -45,47 +48,60 @@ class Api:
                     "missing": asset.missing,
                     "favourite": asset.favourite,
                     "tags": list(asset.tags),
+                    "added": asset.added,
+                    "collections": list(asset.collections),
                 }
                 for asset in index.search(text)
             ]
-        finally:
-            index.close()
 
     def set_favourite(self, path: str, favourite: bool) -> None:
-        index = Index(self._data / INDEX_NAME)
-        try:
+        with self._index() as index:
             index.set_favourite(Path(path), favourite)
-        finally:
-            index.close()
 
     def add_tag(self, path: str, tag: str) -> list[str]:
         """Tag an asset. Returns all its tags, as the index spells them."""
-        index = Index(self._data / INDEX_NAME)
-        try:
+        with self._index() as index:
             index.add_tag(Path(path), tag)
             return index.tags(Path(path))
-        finally:
-            index.close()
 
     def remove_tag(self, path: str, tag: str) -> list[str]:
-        index = Index(self._data / INDEX_NAME)
-        try:
+        with self._index() as index:
             index.remove_tag(Path(path), tag)
             return index.tags(Path(path))
-        finally:
-            index.close()
+
+    def collections(self) -> list[str]:
+        with self._index() as index:
+            return index.collections()
+
+    def create_collection(self, name: str) -> str | None:
+        """Make a collection. Returns why it could not be made, or None."""
+        with self._index() as index:
+            try:
+                index.create_collection(name)
+            except ValueError as error:
+                return str(error)
+        return None
+
+    def delete_collection(self, name: str) -> None:
+        with self._index() as index:
+            index.delete_collection(name)
+
+    def add_to_collection(self, path: str, name: str) -> None:
+        with self._index() as index:
+            index.add_to_collection(Path(path), name)
+
+    def remove_from_collection(self, path: str, name: str) -> None:
+        with self._index() as index:
+            index.remove_from_collection(Path(path), name)
 
     def folders(self) -> list[dict]:
         """The library roots, each with the number of assets in it."""
-        index = Index(self._data / INDEX_NAME)
-        try:
+        with self._index() as index:
             assets = index.search("")
             return [
                 {"path": str(root), "assets": sum(a.path.is_relative_to(root) for a in assets)}
                 for root in index.roots()
             ]
-        finally:
-            index.close()
 
     def add_folder(self) -> dict | None:
         """Ask for a folder and add it as a library root. None when the dialog is cancelled."""
@@ -93,23 +109,17 @@ class Api:
         if not chosen:
             return None
         folder = Path(chosen[0]).resolve()
-        index = Index(self._data / INDEX_NAME)
-        try:
-            index.add_root(folder)
-        except ValueError as error:
-            return {"error": str(error)}
-        finally:
-            index.close()
+        with self._index() as index:
+            try:
+                index.add_root(folder)
+            except ValueError as error:
+                return {"error": str(error)}
         return {"added": str(folder)}
 
     def rescan(self) -> None:
         """Scan every library root, as `capsa scan` does."""
-        with self._thumbnails:
-            index = Index(self._data / INDEX_NAME)
-            try:
-                refresh(index, self._data / THUMBNAILS_NAME)
-            finally:
-                index.close()
+        with self._thumbnails, self._index() as index:
+            refresh(index, self._data / THUMBNAILS_NAME)
 
     def thumbnail(self, cover: str) -> str | None:
         """The thumbnail of a cover image as a data URL the page can show."""
@@ -143,6 +153,11 @@ class Api:
 
 
 def open_window(data: Path) -> None:
+    # pywebview serves the page from a small local server that names each file's
+    # type from Python's mimetypes. On Windows those come from the registry, which
+    # some programs set to text/plain for .js, and a browser runs a module script
+    # only when it arrives as JavaScript.
+    mimetypes.add_type("text/javascript", ".js")
     api = Api(data)
     api._window = webview.create_window(
         "Capsa",

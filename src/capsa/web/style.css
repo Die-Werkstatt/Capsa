@@ -86,6 +86,8 @@ nav li b { font-weight: 400; }
 nav li.on b { border-left: 2px solid var(--lid); margin-left: -12px; padding-left: 10px; }
 nav .number { font: 11px var(--mono); }
 nav li.bad button { color: var(--fault); }
+nav .note { margin-left: 6px; font-size: 10.5px; color: var(--low); }
+nav .link { padding: 5px 0; }
 
 main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .head { display: flex; align-items: center; gap: 12px; height: 72px; }
@@ -168,3 +170,13 @@ main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .link { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 4px 0; color: var(--mid); }
 .link:hover { color: var(--ink); }
 .link:disabled { color: var(--low); cursor: default; }
+
+/* Right-click menu */
+.menu { position: fixed; z-index: 10; min-width: 220px; padding: 4px 0; background: var(--surface); border: 1px solid var(--line2); box-shadow: 0 8px 24px rgba(0, 0, 0, .5); }
+.menu[hidden] { display: none; }
+.menu .entry { width: 100%; display: flex; justify-content: space-between; gap: 24px; padding: 6px 12px; text-align: left; }
+.menu .entry:hover:not(:disabled) { background: var(--tile); }
+.menu .entry:disabled { color: var(--low); cursor: default; }
+.menu kbd { font: 10.5px var(--mono); color: var(--low); }
+.menu .caption { display: block; padding: 6px 12px 2px; font-size: 11.5px; color: var(--mid); }
+.menu hr { margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
