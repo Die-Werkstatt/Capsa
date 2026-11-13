@@ -64,6 +64,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .controls button { width: 46px; height: 100%; display: grid; place-items: center; color: var(--mid); }
 .controls button:hover { background: var(--tile); color: var(--ink); }
 .controls .close:hover { background: var(--close); }
+.controls .settings { width: 40px; margin-right: 6px; }
+.controls .settings.on { background: var(--tile); color: var(--ink); }
+
+/* The scan line: runs along the bottom of the title bar while a scan runs, absent otherwise. */
+.progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; visibility: hidden; }
+.progress.on { visibility: visible; }
+.progress::before { content: ""; position: absolute; top: 0; bottom: 0; width: 30%; background: var(--lid); animation: travel 1.2s ease-in-out infinite; }
+@keyframes travel { from { left: -30%; } to { left: 100%; } }
 
 /* Catalogue: sidebar, grid, details */
 .catalogue { flex: 1; min-height: 0; display: grid; grid-template-columns: 212px 1fr 304px; }
@@ -112,3 +120,19 @@ main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: 700px; padding: 8px 14px; background: var(--ink); color: var(--ground); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; opacity: 0; transition: opacity .15s; }
 .toast.on { opacity: 1; }
+
+/* Settings: a sheet from the right, over the details panel. */
+.sheet { position: fixed; top: 40px; right: 0; bottom: 0; width: 380px; z-index: 5; display: flex; flex-direction: column; gap: 22px; padding: 20px 28px; background: var(--surface); border-left: 1px solid var(--line2); overflow: auto; }
+.sheet[hidden] { display: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; }
+.sheet-head h2 { margin: 0; font-size: 17px; font-weight: 300; }
+.sheet-head button { width: 32px; height: 32px; display: grid; place-items: center; color: var(--mid); margin-right: -8px; }
+.sheet-head button:hover { color: var(--ink); }
+.sheet section { display: flex; flex-direction: column; gap: 8px; }
+.sheet h3 { margin: 0; font-size: 12px; font-weight: 400; color: var(--mid); }
+.folder { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); font: 11.5px var(--mono); }
+.folder span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folder span:last-child { color: var(--low); }
+.link { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 4px 0; color: var(--mid); }
+.link:hover { color: var(--ink); }
+.link:disabled { color: var(--low); cursor: default; }

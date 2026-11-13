@@ -8,12 +8,13 @@ No web server of our own: pywebview passes the calls between JavaScript and Pyth
 import base64
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 import webview
 
 from capsa.index import Index
-from capsa.library import INDEX_NAME, THUMBNAILS_NAME
+from capsa.library import INDEX_NAME, THUMBNAILS_NAME, refresh
 from capsa.thumbnails import make_thumbnail
 
 PAGE = Path(__file__).parent / "web" / "index.html"
@@ -24,6 +25,9 @@ class Api:
         self._data = data
         self._window: webview.Window | None = None
         self._maximized = False
+        # A rescan and the page's thumbnail calls run in different threads and can
+        # make the same thumbnail at once. They take turns.
+        self._thumbnails = threading.Lock()
 
     def search(self, text: str) -> list[dict]:
         # pywebview runs each call in its own thread; an SQLite connection
@@ -45,9 +49,46 @@ class Api:
         finally:
             index.close()
 
+    def folders(self) -> list[dict]:
+        """The library roots, each with the number of assets in it."""
+        index = Index(self._data / INDEX_NAME)
+        try:
+            assets = index.search("")
+            return [
+                {"path": str(root), "assets": sum(a.path.is_relative_to(root) for a in assets)}
+                for root in index.roots()
+            ]
+        finally:
+            index.close()
+
+    def add_folder(self) -> dict | None:
+        """Ask for a folder and add it as a library root. None when the dialog is cancelled."""
+        chosen = self._window.create_file_dialog(webview.FileDialog.FOLDER)
+        if not chosen:
+            return None
+        folder = Path(chosen[0]).resolve()
+        index = Index(self._data / INDEX_NAME)
+        try:
+            index.add_root(folder)
+        except ValueError as error:
+            return {"error": str(error)}
+        finally:
+            index.close()
+        return {"added": str(folder)}
+
+    def rescan(self) -> None:
+        """Scan every library root, as `capsa scan` does."""
+        with self._thumbnails:
+            index = Index(self._data / INDEX_NAME)
+            try:
+                refresh(index, self._data / THUMBNAILS_NAME)
+            finally:
+                index.close()
+
     def thumbnail(self, cover: str) -> str | None:
         """The thumbnail of a cover image as a data URL the page can show."""
-        path = make_thumbnail(Path(cover), self._data / THUMBNAILS_NAME)
+        with self._thumbnails:
+            path = make_thumbnail(Path(cover), self._data / THUMBNAILS_NAME)
         if path is None:
             return None
         return "data:image/jpeg;base64," + base64.b64encode(path.read_bytes()).decode()
