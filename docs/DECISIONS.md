@@ -101,7 +101,7 @@ One entry per non-obvious choice. Newest at the bottom.
 **Alternatives:** The design's list without Materials. One group per kind: eleven entries, most of them empty.
 
 ## 2026-11-13: Favourites and tags are kept by path, not by asset
-**Decision:** `favourites` and `tags` name a root and a root-relative path, not an asset id. A rescan that forgets or regroups an asset leaves them in place; an asset with that path picks them up again. Index version 3; a version 2 file is upgraded on open. Recommended to Sandro on a card (2026-11-13), built on that recommendation.
+**Decision:** `favourites` and `tags` name a root and a root-relative path, not an asset id. A rescan that forgets or regroups an asset leaves them in place; an asset with that path picks them up again. Index version 3; a version 2 file is upgraded on open. Sandro chose this on a card (2026-11-13).
 **Why:** They are the only data Capsa cannot rebuild from the library. Frames that become a sequence and back, or a folder renamed and renamed back, must not cost them.
 **Alternatives:** A column on `assets` or a table keyed by asset id: simpler, but a regroup deletes the row and the tags with it.
 **Trade-off:** Marks of a path that never returns stay in the file. They are a few bytes each and nothing shows them.
