@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Capsa</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="drag pywebview-drag-region"></div>
+  <svg class="lockup" viewBox="0 0 292 50" role="img" aria-label="Capsa">
+    <g fill="none" stroke="#EDEDED" stroke-width="10" stroke-linejoin="miter" stroke-linecap="butt">
+      <rect x="0" y="0" width="50" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V45H22M28 45H45V16"/>
+      <g transform="translate(68 0)"><path d="M40 5H5V45H40"/>
+        <g transform="translate(46 0)"><rect x="0" y="0" width="40" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V50M35 16V50M5 27H35"/></g>
+        <g transform="translate(92 0)"><path d="M5 50V5H35V27H5"/></g>
+        <g transform="translate(138 0)"><path d="M40 5H5V27H35V45H0"/></g>
+        <g transform="translate(184 0)"><rect x="0" y="0" width="40" height="10" fill="#4F8CFF" stroke="none"/><path d="M5 16V50M35 16V50M5 27H35"/></g>
+      </g>
+    </g>
+  </svg>
+  <label class="search">
+    <svg class="icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+    <input id="search" type="search" placeholder="Search" autocomplete="off" spellcheck="false">
+    <kbd>Ctrl K</kbd>
+  </label>
+  <div class="controls">
+    <button id="minimize" type="button" aria-label="Minimise"><svg class="icon" viewBox="0 0 16 16"><path d="M3.5 8h9"/></svg></button>
+    <button id="maximize" type="button" aria-label="Maximise"><svg class="icon" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9"/></svg></button>
+    <button id="close" class="close" type="button" aria-label="Close"><svg class="icon" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+  </div>
+</header>
+<main>
+  <div class="head"><h1 id="title">All</h1><span id="count" class="count"></span></div>
+  <div id="grid" class="grid"></div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

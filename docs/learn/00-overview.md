@@ -9,9 +9,9 @@ Your assets stay where they are. Capsa walks through the folders you point it at
 - **The scanner** walks the folders and lists the files. Like a File Pattern node: it finds files, it does not open them.
 - **The index** is the notebook: one database file that remembers every asset, its tags and where it lives.
 - **Thumbnails** are small preview images Capsa makes once and keeps, like a texture cache.
-- **The interface** shows the index as a grid you can search and filter.
+- **The window** shows the index as a grid you can search.
 
-The scanner, the grouping into assets, the index and thumbnails exist so far: see [scanner.md](scanner.md), [assets.md](assets.md), [index.md](index.md) and [thumbnails.md](thumbnails.md). [library.md](library.md) shows how to run them on your library.
+The scanner, the grouping into assets, the index and thumbnails exist so far: see [scanner.md](scanner.md), [assets.md](assets.md), [index.md](index.md) and [thumbnails.md](thumbnails.md). [library.md](library.md) shows how to run them on your library, [window.md](window.md) how the window works.
 
 ## What Capsa never does
 

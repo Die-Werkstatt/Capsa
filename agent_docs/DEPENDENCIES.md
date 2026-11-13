@@ -16,6 +16,7 @@ the reason, so the same discussion does not happen twice.
 | Dependency | Kind | Why |
 |---|---|---|
 | OpenImageIO | runtime | Reads `.exr`, `.hdr` and the common image formats and writes thumbnails; the standard library reads none of them. Brings numpy. Opens files from library roots, writes only where it is told. |
+| pywebview | runtime | The frameless window: Windows' WebView2 shows the page, and its JavaScript calls Python without a web server. Brings bottle, proxy_tools, typing_extensions, and pythonnet on Windows. |
 | pytest | dev | Runs the unit tests. |
 | ruff | dev | Lint and format. Pinned to 0.16.7, the version aislop 0.16.0 runs. |
 | uv_build | build | Builds the `capsa` package from `src/`; uv's own backend. |

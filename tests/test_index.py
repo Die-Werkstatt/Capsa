@@ -84,6 +84,11 @@ def test_regrouped_asset_is_forgotten_not_missing(index: Index, library: Path):
     assert names(index, "decal") == ["decals"]
 
 
+def test_search_without_words_lists_every_asset(index: Index, library: Path):
+    index.update(library, found(library))
+    assert names(index, "  ") == ["chair", "metal_053B", "sky_sunset"]
+
+
 def test_search_matches_words_from_their_start(index: Index, library: Path):
     index.update(library, found(library))
     assert names(index, "sunset") == ["sky_sunset"]
@@ -91,7 +96,6 @@ def test_search_matches_words_from_their_start(index: Index, library: Path):
     assert names(index, "mat met") == ["metal_053B"]
     assert names(index, "models") == ["chair"]
     assert names(index, "table") == []
-    assert names(index, "   ") == []
 
 
 def test_search_finds_assets_not_their_files(index: Index, library: Path):

@@ -4,6 +4,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Asset:** one thing in the catalogue: a material, an HDRI, a model. It can be one file or a folder of files.
 
+**Bridge:** pywebview's link between the page's JavaScript and Python. `window.pywebview.api.search("metal")` in JavaScript runs `Api.search("metal")` in Python and hands back the answer.
+
 **Cache:** files Capsa made and can make again, kept so the work is done once. Deleting the cache loses nothing.
 
 **Cover:** the picture shown on an asset's tile.
@@ -12,6 +14,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Data folder:** the folder where Capsa keeps what it writes: the index and the thumbnails. On Windows `%LOCALAPPDATA%\Capsa`.
 
+**Data URL:** a picture written into a piece of text, `data:image/jpeg;base64,...`, so the page can show it without loading a file.
+
 **Database:** a file built for storing rows of data and finding them again quickly. Capsa's index is one.
 
 **Dataclass:** a small Python class that only holds values, like a row in a spreadsheet. `FileRecord` is one: path, size, date, kind.
@@ -19,6 +23,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 **Dependency:** code somebody else wrote that Capsa uses, such as pytest. Like a plugin: Capsa does not work without it, and it has its own version.
 
 **Enum:** a fixed list of allowed values with names. `Kind` is one: USD, texture, HDRI and so on. A typo such as `Kind.TEXTRUE` fails at once, where a misspelt word in quotes would pass unnoticed.
+
+**Frameless window:** a window without the system's title bar. Capsa draws its own, with the search box and the minimise, maximise and close buttons.
 
 **Full-text search (FTS5):** a search that looks up words in a prepared list, like the index at the back of a book, and does not read every row.
 

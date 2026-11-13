@@ -1,15 +1,17 @@
-"""The command line: `capsa add <folder>`, `capsa scan`, `capsa search <words>`."""
+"""The command line: `capsa` opens the window; `capsa add <folder>`, `capsa scan` and
+`capsa search <words>` work in the terminal."""
 
 import argparse
 from pathlib import Path
 
 from capsa.index import Index
 from capsa.library import INDEX_NAME, THUMBNAILS_NAME, data_folder, refresh
+from capsa.window import open_window
 
 
 def main(arguments: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="capsa")
-    commands = parser.add_subparsers(dest="command", required=True)
+    commands = parser.add_subparsers(dest="command")
     add = commands.add_parser("add", help="add a library root")
     add.add_argument("folder", type=Path)
     commands.add_parser("scan", help="scan every library root")
@@ -19,6 +21,9 @@ def main(arguments: list[str] | None = None) -> None:
 
     data = data_folder()
     data.mkdir(parents=True, exist_ok=True)
+    if options.command is None:
+        open_window(data)
+        return
     index = Index(data / INDEX_NAME)
     try:
         if options.command == "add":

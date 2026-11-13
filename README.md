@@ -5,8 +5,7 @@ indexes the asset folders you already have, without moving or changing
 anything, and finds assets fast.
 
 In development: Capsa scans a folder, groups the files into assets, makes
-thumbnails and searches the assets by name, from a terminal. There is no
-window yet. The plan is in
+thumbnails and shows them in a window you can search. The plan is in
 [`docs/BRIEF.md`](docs/BRIEF.md), the order of work in
 [`agent_docs/ROADMAP.md`](agent_docs/ROADMAP.md).
 
@@ -18,7 +17,10 @@ Needs [uv](https://docs.astral.sh/uv/getting-started/installation/).
 uv run capsa add <folder>
 uv run capsa scan
 uv run capsa search <words>
+uv run capsa
 ```
+
+The last one opens the window.
 
 ## Run the tests
 
