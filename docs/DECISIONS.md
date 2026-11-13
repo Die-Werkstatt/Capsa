@@ -88,3 +88,9 @@ One entry per non-obvious choice. Newest at the bottom.
 **Why:** After the sequence rule, the rescan of Sandro's library marked 274 assets missing: the 240 caustics frames and the loose marks maps, all still on disk inside the new sequence and materials. Nothing would ever clear that mark.
 **Alternatives:** A command that deletes every missing row: also deletes the rows of an unplugged drive, with their tags.
 **Trade-off:** A tag on a regrouped asset is lost. No asset has tags yet.
+
+## 2026-11-13: The window talks to Python through pywebview, in plain JavaScript
+**Decision:** The page calls Python through pywebview's JS API (`window.Api`, `pywebview.api.<name>` in JavaScript). No FastAPI, no React, no build step. Thumbnails reach the page as data URLs. Sandro chose this on 2026-11-13 (#7).
+**Why:** pywebview's docs: the JS API "allows communication between Python and Javascript domains without a web server". One process, no port, no CSRF protection to get right, and every file of the page is readable as it is.
+**Alternatives:** FastAPI + plain JavaScript: an HTTP API a Houdini panel could reuse, at the cost of a server and CSRF protection. FastAPI + React: the brief's first plan; adds a JavaScript build and React to learn before the first grid.
+**Trade-off:** A Houdini panel cannot call the window; it would read the SQLite index itself. Each thumbnail travels as Base64 text, about a third larger than the file. Each call opens its own index connection, because pywebview runs calls in separate threads.

@@ -3,24 +3,24 @@
 Asset library for VFX/3D: a personal tool for Sandro's Houdini/Solaris (USD,
 Karma) workflow that indexes existing asset folders and finds assets fast. It
 is also a learning project: Sandro must be able to explain and extend every
-part without AI. Phase 1 has started: scanner, index, thumbnails and a
-command line, no window. The brief is `docs/BRIEF.md`.
+part without AI. Phase 1 has started: scanner, index, thumbnails, a command
+line and a first window. The brief is `docs/BRIEF.md`.
 
 ## Stack
 
 - Python 3.13, packaged with uv (`pyproject.toml`, `uv.lock`). OpenImageIO
-  reads images.
+  reads images; a frameless pywebview window shows plain HTML and JS.
 - pytest for unit tests, ruff 0.16.7 through aislop for lint.
 - Runs on Windows now and Linux later.
-- Planned, not installed: usd-core, FastAPI, React in a pywebview window
-  (`docs/DECISIONS.md`).
+- Planned, not installed: usd-core. No FastAPI, no React (`docs/DECISIONS.md`).
 
 ## Project structure
 
 - `src/capsa/`: `scanner.py` lists the files under a library root, `assets.py`
   groups them into assets, `index.py` keeps the assets in SQLite and searches
   them, `thumbnails.py` makes a preview of an image, `library.py` runs them
-  in order and names the data folder, `__main__.py` is the `capsa` command.
+  in order and names the data folder, `window.py` and `web/` are the window,
+  `__main__.py` is the `capsa` command.
 - `tests/`: unit tests. Houdini is not available in Claude's environment; what
   Sandro's machine showed is in issue #11.
 - `docs/`: the brief (`BRIEF.md`), decisions (`DECISIONS.md`), architecture,

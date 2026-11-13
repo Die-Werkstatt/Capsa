@@ -174,22 +174,26 @@ class Index:
     def search(self, text: str) -> list[IndexedAsset]:
         """Assets whose path contains every word of `text`, best match first.
 
-        A word matches from its start: "cha" finds "chair".
+        A word matches from its start: "cha" finds "chair". No words: every
+        asset, by name.
         """
         words = ['"' + word.replace('"', '""') + '"*' for word in text.split()]
-        if not words:
-            return []
-        rows = self._db.execute(
+        select = (
             "SELECT roots.path, assets.path, name, assets.kind, cover, missing,"
             " SUM(files.size_bytes), MAX(files.modified_time)"
-            " FROM assets_search"
-            " JOIN assets ON assets.id = assets_search.rowid"
+            " FROM assets"
             " JOIN roots ON roots.id = assets.root_id"
             " JOIN files ON files.asset_id = assets.id"
-            " WHERE assets_search MATCH ?"
-            " GROUP BY assets.id ORDER BY assets_search.rank",
-            (" ".join(words),),
         )
+        if words:
+            rows = self._db.execute(
+                select + " JOIN assets_search ON assets_search.rowid = assets.id"
+                " WHERE assets_search MATCH ?"
+                " GROUP BY assets.id ORDER BY assets_search.rank",
+                (" ".join(words),),
+            )
+        else:
+            rows = self._db.execute(select + " GROUP BY assets.id ORDER BY name COLLATE NOCASE")
         return [
             IndexedAsset(
                 name,

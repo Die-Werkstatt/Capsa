@@ -74,3 +74,10 @@ def test_add_scan_search(library, data, capsys):
 def test_add_refuses_what_is_no_folder(library, data):
     with pytest.raises(SystemExit):
         main(["add", str(library / "chair.usd")])
+
+
+def test_no_command_opens_the_window(data, monkeypatch):
+    opened = []
+    monkeypatch.setattr("capsa.__main__.open_window", opened.append)
+    main([])
+    assert opened == [data]
