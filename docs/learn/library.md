@@ -15,7 +15,7 @@ uv run capsa search metal 053
 ```
 
 - `add` remembers a folder as a library root. It reads nothing yet.
-- `scan` walks every root, groups the files into assets, updates the index and makes a thumbnail of every cover. It prints how many assets are new, changed or missing.
+- `scan` walks every root, groups the files into assets, updates the index and makes a thumbnail of every cover. It prints how many assets are new, changed, missing or regrouped.
 - `search` prints the assets whose path matches every word: kind, name, path.
 
 Run `scan` twice. The second run reports `0 added, 0 changed` and is fast, because every thumbnail is already there.

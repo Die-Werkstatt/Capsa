@@ -32,7 +32,7 @@ def main(arguments: list[str] | None = None) -> None:
                 changes = result.changes
                 print(result.root)
                 print(
-                    f"  {changes.added} added, {changes.changed} changed, {changes.missing} missing"
+                    f"  {changes.added} added, {changes.changed} changed, {changes.missing} missing, {changes.regrouped} regrouped"
                 )
                 print(
                     f"  {result.thumbnails} thumbnails, {result.without_thumbnail} covers unreadable"

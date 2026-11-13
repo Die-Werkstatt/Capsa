@@ -39,23 +39,27 @@ def names(index: Index, text: str) -> list[str]:
 
 
 def test_first_scan_adds_every_asset(index: Index, library: Path):
-    assert index.update(library, found(library)) == Changes(added=3, changed=0, missing=0)
+    assert index.update(library, found(library)) == Changes(
+        added=3, changed=0, missing=0, regrouped=0
+    )
 
 
 def test_same_scan_twice_changes_nothing(index: Index, library: Path):
     index.update(library, found(library))
-    assert index.update(library, found(library)) == Changes(0, 0, 0)
+    assert index.update(library, found(library)) == Changes(0, 0, 0, 0)
 
 
 def test_rescan_sees_changed_and_missing_assets(index: Index, library: Path):
     index.update(library, found(library))
     (library / "materials" / "metal_053B" / "Metal053B_Normal.png").write_bytes(b"new map")
     (library / "sky_sunset.hdr").unlink()
-    assert index.update(library, found(library)) == Changes(added=0, changed=1, missing=1)
+    assert index.update(library, found(library)) == Changes(
+        added=0, changed=1, missing=1, regrouped=0
+    )
     (sky,) = index.search("sunset")
     assert sky.missing
     # Already marked: a third scan does not count it again.
-    assert index.update(library, found(library)) == Changes(0, 0, 0)
+    assert index.update(library, found(library)) == Changes(0, 0, 0, 0)
 
 
 def test_asset_that_comes_back_is_no_longer_missing(index: Index, library: Path):
@@ -63,8 +67,21 @@ def test_asset_that_comes_back_is_no_longer_missing(index: Index, library: Path)
     index.update(library, assets)
     index.update(library, [])  # the drive was unplugged
     assert index.search("chair")[0].missing
-    assert index.update(library, assets) == Changes(added=0, changed=3, missing=0)
+    assert index.update(library, assets) == Changes(added=0, changed=3, missing=0, regrouped=0)
     assert not index.search("chair")[0].missing
+
+
+def test_regrouped_asset_is_forgotten_not_missing(index: Index, library: Path):
+    # One map: a lone texture. A second map turns the folder into a material.
+    folder = library / "decals"
+    folder.mkdir()
+    (folder / "decal_Roughness.png").write_bytes(b"r")
+    index.update(library, found(library))
+    assert names(index, "decal") == ["decal_Roughness"]
+    (folder / "decal_Gloss.png").write_bytes(b"g")
+    changes = index.update(library, found(library))
+    assert (changes.added, changes.missing, changes.regrouped) == (1, 0, 1)
+    assert names(index, "decal") == ["decals"]
 
 
 def test_search_matches_words_from_their_start(index: Index, library: Path):

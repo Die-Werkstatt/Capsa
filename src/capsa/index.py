@@ -54,6 +54,7 @@ class Changes:
     added: int
     changed: int
     missing: int
+    regrouped: int  # forgotten: their files now belong to other assets
 
 
 class Index:
@@ -93,7 +94,8 @@ class Index:
         """Bring the index in line with the assets a scan of `root` found.
 
         An asset the scan did not find is marked missing, not forgotten: an
-        unplugged drive must not cost its tags.
+        unplugged drive must not cost its tags. Only when its files are still
+        there, grouped into other assets, is it forgotten.
         """
         (root_id,) = self._db.execute(
             "SELECT id FROM roots WHERE path = ?", (str(root),)
@@ -145,9 +147,23 @@ class Index:
                     [(asset_id, *file) for file in files],
                 )
             # Whatever is left in `known` was not in the scan.
-            newly_missing = [(asset_id,) for asset_id, missing in known.values() if not missing]
+            scanned = {f.path.relative_to(root).as_posix() for a in assets for f in a.files}
+            regrouped = [
+                (asset_id,)
+                for asset_id, _ in known.values()
+                if any(path in scanned for path, *_ in self._files(asset_id))
+            ]
+            self._db.executemany("DELETE FROM files WHERE asset_id = ?", regrouped)
+            self._db.executemany("DELETE FROM assets_search WHERE rowid = ?", regrouped)
+            self._db.executemany("DELETE FROM assets WHERE id = ?", regrouped)
+            gone = {asset_id for (asset_id,) in regrouped}
+            newly_missing = [
+                (asset_id,)
+                for asset_id, missing in known.values()
+                if not missing and asset_id not in gone
+            ]
             self._db.executemany("UPDATE assets SET missing = 1 WHERE id = ?", newly_missing)
-        return Changes(added, changed, len(newly_missing))
+        return Changes(added, changed, len(newly_missing), len(regrouped))
 
     def _files(self, asset_id: int) -> list[tuple[str, int, float, str]]:
         return self._db.execute(

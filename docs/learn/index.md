@@ -28,9 +28,10 @@ Paths are stored relative to the root, so `materials/metal/metal_053B`, not `D:\
 - An asset that is new gets a row. Counted as **added**.
 - An asset whose files differ (one more, one fewer, another size or date) gets its files replaced. Counted as **changed**.
 - An asset the index knows but the scan did not find is marked **missing**. Its row stays.
+- Unless its files are still there and now belong to another asset: a folder that became a material, frames that became a sequence. Then the old row is deleted. Counted as **regrouped**.
 - Everything else is left alone.
 
-Why mark instead of delete? If a drive is unplugged, the scan finds nothing on it. Deleting those rows would also throw away every tag you gave those assets. When the drive is back, the next scan clears the mark.
+Why mark instead of delete? If a drive is unplugged, the scan finds nothing on it. Deleting those rows would also throw away every tag you gave those assets. When the drive is back, the next scan clears the mark. A regrouped asset is different: its files are on the drive, so nothing would ever clear its mark.
 
 All changes of one update are written together, in one **transaction**: either all of them land or none. A crash halfway cannot leave half an update behind, like a render that writes to a temp file and renames it when the frame is complete.
 

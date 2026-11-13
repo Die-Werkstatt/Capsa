@@ -63,7 +63,7 @@ def test_refresh_leaves_the_library_untouched(library, tmp_path):
 def test_add_scan_search(library, data, capsys):
     main(["add", str(library)])
     main(["scan"])
-    assert "3 added, 0 changed, 0 missing" in capsys.readouterr().out
+    assert "3 added, 0 changed, 0 missing, 0 regrouped" in capsys.readouterr().out
     main(["search", "goegap"])
     found = capsys.readouterr().out
     assert found.startswith("hdri")
