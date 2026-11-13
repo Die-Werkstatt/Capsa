@@ -24,8 +24,7 @@ def main(arguments: list[str] | None = None) -> None:
     if options.command is None:
         open_window(data)
         return
-    index = Index(data / INDEX_NAME)
-    try:
+    with Index(data / INDEX_NAME) as index:
         if options.command == "add":
             folder = options.folder.resolve()
             if not folder.is_dir():
@@ -47,8 +46,6 @@ def main(arguments: list[str] | None = None) -> None:
         else:
             for asset in index.search(" ".join(options.words)):
                 print(f"{asset.kind.value:10} {asset.name:30} {asset.path}")
-    finally:
-        index.close()
 
 
 if __name__ == "__main__":

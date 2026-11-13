@@ -105,3 +105,15 @@ One entry per non-obvious choice. Newest at the bottom.
 **Why:** They are the only data Capsa cannot rebuild from the library. Frames that become a sequence and back, or a folder renamed and renamed back, must not cost them.
 **Alternatives:** A column on `assets` or a table keyed by asset id: simpler, but a regroup deletes the row and the tags with it.
 **Trade-off:** Marks of a path that never returns stay in the file. They are a few bytes each and nothing shows them.
+
+## 2026-11-13: Assets remember when a scan first found them
+**Decision:** `assets.added` holds when a scan first found an asset. Added this week and the Recent sort use it. Assets already in an index of version 3 get the time of the upgrade to version 4. Collections are kept by root and path, as favourites and tags are.
+**Why:** "Added" means added to the library, which a file's own date does not say: copying a file keeps its date. The upgrade time is the earliest moment Capsa can vouch for.
+**Alternatives:** The newest file's date: wrong for copied files. Zero for old assets: they would never show as recent.
+**Trade-off:** For the first week after the upgrade, Added this week holds every asset. A regrouped asset counts as new, since it is a new row.
+
+## 2026-11-13: The page's scripts are JavaScript modules
+**Decision:** `app.js` loads `details.js`, `sheet.js` and `ui.js` with `import`. `open_window` registers `.js` as `text/javascript` in Python's `mimetypes` before pywebview starts its server.
+**Why:** One script had grown past the 400 lines the checks allow. Modules name what each file uses, so a reader can follow a function to its file. Windows can map `.js` to `text/plain` in the registry, Python reads that map, and a browser refuses to run a module sent as plain text (Django ticket #32041 describes the same failure).
+**Alternatives:** Plain scripts sharing global names: no registry risk, but the lint check reports every name from another file as undefined, and nothing says where a name comes from.
+**Trade-off:** The page no longer works opened as a file (`file://`); it needs a server, which pywebview always starts.
