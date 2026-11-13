@@ -150,3 +150,101 @@ def test_index_of_another_version_is_refused(tmp_path: Path):
     db.close()
     with pytest.raises(RuntimeError, match="version 99"):
         Index(path)
+
+
+def test_favourite_and_tags_show_in_search(index: Index, library: Path):
+    index.update(library, found(library))
+    chair = library / "models" / "chair.obj"
+    index.set_favourite(chair, True)
+    index.add_tag(chair, "  Dining   Room ")
+    index.add_tag(chair, "wood")
+    (found_chair,) = index.search("chair")
+    assert found_chair.favourite
+    assert found_chair.tags == ("dining room", "wood")
+    index.set_favourite(chair, False)
+    index.remove_tag(chair, "wood")
+    (found_chair,) = index.search("chair")
+    assert not found_chair.favourite
+    assert found_chair.tags == ("dining room",)
+
+
+def test_search_finds_tags(index: Index, library: Path):
+    index.update(library, found(library))
+    index.add_tag(library / "sky_sunset.hdr", "exterior")
+    assert names(index, "exter") == ["sky_sunset"]
+    index.remove_tag(library / "sky_sunset.hdr", "exterior")
+    assert names(index, "exter") == []
+
+
+def test_marks_outlive_a_regrouped_asset(index: Index, library: Path):
+    # Two frames are two textures; a third makes them one sequence and the
+    # textures are forgotten. Removing it brings them back with their marks.
+    frames = library / "frames"
+    frames.mkdir()
+    for number in (1, 2):
+        (frames / f"dust_{number:04}.png").write_bytes(b"png")
+    index.update(library, found(library))
+    first = frames / "dust_0001.png"
+    index.set_favourite(first, True)
+    index.add_tag(first, "dust")
+    (frames / "dust_0003.png").write_bytes(b"png")
+    assert index.update(library, found(library)).regrouped == 2
+    (sequence,) = index.search("dust")
+    assert sequence.kind == Kind.SEQUENCE
+    assert sequence.tags == ()
+    (frames / "dust_0003.png").unlink()
+    index.update(library, found(library))
+    (back,) = [asset for asset in index.search("dust") if asset.path == first]
+    assert back.favourite
+    assert back.tags == ("dust",)
+
+
+def test_path_outside_every_root_is_refused(index: Index, tmp_path: Path):
+    with pytest.raises(ValueError, match="not inside a library root"):
+        index.add_tag(tmp_path / "elsewhere.png", "wood")
+
+
+def test_index_of_version_2_is_upgraded(tmp_path: Path, library: Path):
+    path = tmp_path / "index.sqlite"
+    db = sqlite3.connect(path)
+    db.executescript(VERSION_2)
+    db.execute("INSERT INTO roots (path) VALUES (?)", (str(library),))
+    db.execute(
+        "INSERT INTO assets (root_id, path, name, kind) VALUES (1, 'models/chair.obj', 'chair', 'obj')"
+    )
+    db.execute("INSERT INTO files VALUES (1, 'models/chair.obj', 3, 0.0, 'obj')")
+    db.execute("INSERT INTO assets_search (rowid, path) VALUES (1, 'models/chair.obj')")
+    db.execute("PRAGMA user_version = 2")
+    db.commit()
+    db.close()
+    index = Index(path)
+    assert names(index, "chair") == ["chair"]
+    index.add_tag(library / "models" / "chair.obj", "wood")
+    assert names(index, "wood") == ["chair"]
+    index.close()
+    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone()[0] == 3
+
+
+# The tables of version 2, as PR #28 created them.
+VERSION_2 = """
+CREATE TABLE roots (id INTEGER PRIMARY KEY, path TEXT NOT NULL UNIQUE);
+CREATE TABLE assets (
+    id INTEGER PRIMARY KEY,
+    root_id INTEGER NOT NULL REFERENCES roots (id),
+    path TEXT NOT NULL,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    cover TEXT,
+    missing INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (root_id, path)
+);
+CREATE TABLE files (
+    asset_id INTEGER NOT NULL REFERENCES assets (id),
+    path TEXT NOT NULL,
+    size_bytes INTEGER NOT NULL,
+    modified_time REAL NOT NULL,
+    kind TEXT NOT NULL
+);
+CREATE INDEX files_by_asset ON files (asset_id);
+CREATE VIRTUAL TABLE assets_search USING fts5 (path);
+"""

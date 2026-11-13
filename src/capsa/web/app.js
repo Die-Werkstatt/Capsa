@@ -9,6 +9,7 @@ const KINDS = {
 // Sidebar groups: [id, label, kinds]. "All" has no kinds and takes everything.
 const GROUPS = [
   ["all", "All", []],
+  ["favourites", "Favourites", []],
   ["models", "Models", ["usd", "alembic", "fbx", "obj"]],
   ["materials", "Materials", ["material"]],
   ["textures", "Textures", ["texture", "sequence"]],
@@ -22,8 +23,6 @@ const SORTS = {
   name: (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }),
   size: (a, b) => b.size - a.size,
 };
-const GRID_ICON = '<svg class="icon" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="4.5" height="4.5"/><rect x="9" y="2.5" width="4.5" height="4.5"/><rect x="2.5" y="9" width="4.5" height="4.5"/><rect x="9" y="9" width="4.5" height="4.5"/></svg>';
-const LIST_ICON = '<svg class="icon" viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg>';
 
 const nav = document.getElementById("nav");
 const grid = document.getElementById("grid");
@@ -43,6 +42,7 @@ const thumbnails = new Map(); // cover path -> data URL, or null when it cannot 
 
 function inGroup(asset, id) {
   if (id === "missing") return asset.missing;
+  if (id === "favourites") return asset.favourite;
   const kinds = GROUPS.find((g) => g[0] === id)[2];
   return kinds.length === 0 || kinds.includes(asset.kind);
 }
@@ -114,6 +114,7 @@ function tile(asset) {
   const picture = document.createElement("div");
   picture.className = asset.path === selected ? "picture on" : "picture";
   showThumbnail(picture, asset);
+  picture.append(star(asset));
   const name = document.createElement("span");
   name.className = "name";
   name.textContent = asset.name;
@@ -159,6 +160,9 @@ function drawDetails() {
   const name = document.createElement("span");
   name.className = "big-name";
   name.textContent = asset.name;
+  const head = document.createElement("div");
+  head.className = "name-row";
+  head.append(name, star(asset));
   const rows = document.createElement("div");
   rows.className = "rows";
   const row = (key, value, bad) => {
@@ -183,7 +187,79 @@ function drawDetails() {
   );
   explorer.disabled = asset.missing;
   actions.append(copy, explorer);
-  details.replaceChildren(preview, name, rows, actions);
+  details.replaceChildren(preview, head, rows, tagList(asset), actions);
+}
+
+// Icons are <template>s in index.html; each use takes a copy.
+function icon(id) {
+  return document.getElementById(id).content.cloneNode(true);
+}
+
+function star(asset) {
+  const element = document.createElement("span");
+  element.className = asset.favourite ? "star on" : "star";
+  element.dataset.star = "";
+  element.title = asset.favourite ? "Remove from Favourites (F)" : "Add to Favourites (F)";
+  element.append(icon("star-icon"));
+  element.onclick = (event) => {
+    event.stopPropagation();
+    toggleFavourite(asset);
+  };
+  return element;
+}
+
+async function toggleFavourite(asset) {
+  asset.favourite = !asset.favourite;
+  await window.pywebview.api.set_favourite(asset.path, asset.favourite);
+  draw();
+}
+
+function tagList(asset) {
+  const list = document.createElement("div");
+  list.className = "tags";
+  for (const tag of asset.tags) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "tag";
+    chip.title = `Remove ${tag}`;
+    chip.textContent = tag;
+    chip.onclick = async () => {
+      asset.tags = await window.pywebview.api.remove_tag(asset.path, tag);
+      drawDetails();
+    };
+    list.append(chip);
+  }
+  const add = document.createElement("button");
+  add.type = "button";
+  add.className = "tag add";
+  add.id = "add-tag";
+  add.textContent = "+ tag";
+  add.onclick = () => editTag(add, asset);
+  list.append(add);
+  return list;
+}
+
+function editTag(button, asset) {
+  const input = document.createElement("input");
+  input.className = "tag-input";
+  input.setAttribute("aria-label", "New tag");
+  button.replaceWith(input);
+  input.focus();
+  let done = false;
+  const finish = async (keep) => {
+    if (done) return;
+    done = true;
+    if (keep && input.value.trim()) {
+      asset.tags = await window.pywebview.api.add_tag(asset.path, input.value);
+    }
+    drawDetails();
+  };
+  input.addEventListener("keydown", (event) => {
+    event.stopPropagation();
+    if (event.key === "Enter") finish(true);
+    if (event.key === "Escape") finish(false);
+  });
+  input.addEventListener("blur", () => finish(true));
 }
 
 function button(text, extra, onClick) {
@@ -237,7 +313,7 @@ function setLayout(asList) {
   list = asList;
   grid.classList.toggle("list", list);
   tileSize.hidden = list;
-  layout.innerHTML = list ? GRID_ICON : LIST_ICON;
+  layout.replaceChildren(icon(list ? "grid-icon" : "list-icon"));
   layout.setAttribute("aria-label", list ? "Switch to grid" : "Switch to list");
 }
 layout.onclick = () => setLayout(!list);
@@ -326,6 +402,16 @@ search.addEventListener("input", () => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !sheet.hidden) openSheet(false);
+  const inField = event.target.closest("input, select");
+  const asset = assets.find((a) => a.path === selected);
+  if (!inField && asset && !event.ctrlKey && !event.altKey) {
+    if (event.key === "f" || event.key === "F") toggleFavourite(asset);
+    if (event.key === "t" || event.key === "T") {
+      event.preventDefault();
+      const add = document.getElementById("add-tag");
+      if (add) editTag(add, asset);
+    }
+  }
   if (event.ctrlKey && event.key.toLowerCase() === "k") {
     event.preventDefault();
     search.focus();

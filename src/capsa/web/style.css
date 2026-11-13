@@ -108,6 +108,13 @@ main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .tile .name { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .kind { margin-top: -6px; font-size: 11.5px; color: var(--low); }
 .tile .size { display: none; }
+.star { color: var(--mid); cursor: pointer; }
+.star:hover, .star.on { color: var(--ink); }
+.star.on .icon { fill: currentColor; }
+.tile .star { position: absolute; top: 6px; right: 6px; opacity: 0; }
+.tile:hover .star { opacity: .85; }
+.tile .star.on { opacity: 1; }
+.grid.list .star { display: none; }
 .tile.missing .name, .tile.missing .kind { color: var(--fault); }
 
 /* List: one row per asset with a small picture, and the size shown. */
@@ -123,6 +130,13 @@ main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .details > * { flex-shrink: 0; }
 .details .preview { height: 180px; background: var(--tile) center / contain no-repeat; }
 .details .big-name { font-size: 17px; font-weight: 300; overflow-wrap: anywhere; user-select: text; }
+.name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tag { font-size: 11.5px; border: 1px solid var(--line2); padding: 2px 8px; }
+.tag:hover { border-color: var(--mid); text-decoration: line-through; }
+.tag.add { color: var(--low); border-style: dashed; }
+.tag.add:hover { color: var(--ink); text-decoration: none; }
+.tag-input { width: 120px; font: 11.5px var(--sans); padding: 2px 8px; background: var(--ground); color: var(--ink); border: 1px solid var(--mid); outline: 0; }
 .rows { display: grid; grid-template-columns: auto minmax(0, 1fr); }
 .rows span { padding: 7px 0; border-bottom: 1px solid var(--line); }
 .rows span:nth-child(odd) { color: var(--mid); }

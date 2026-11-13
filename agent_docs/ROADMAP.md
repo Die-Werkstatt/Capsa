@@ -16,7 +16,7 @@ Decisions and checks that the first features wait for.
 
 Phase 1, one pull request per item, in this order.
 
-- [ ] Favourites, tags and collections
+- [ ] Collections, including Added this week
 - [ ] Keep the index current when files change (#18)
 - [ ] Tell an HDRI from another `.exr` by its shape (#29)
 

@@ -8,11 +8,11 @@
 
 - **Sidebar:** groups of assets with their counts. Library holds All, Models, Materials, Textures (sequences included), HDRIs and Caches. Needs attention holds Missing files, shown only when an asset is missing.
 - **Grid:** the assets of the chosen group as tiles with thumbnail, name and kind. Above it: a slider for the tile size, a button that switches to a list (one row per asset, with its size) and back, and the sort order. Recent puts the newest file first, Name sorts by name with numbers in number order (`metal_2` before `metal_10`), Size puts the largest first.
-- **Details:** the selected asset: preview, name, type, size, date and path, then Copy path and Show in Explorer.
+- **Details:** the selected asset: preview, name with its star, type, size, date and path, its tags, then Copy path and Show in Explorer.
 
 The gear in the title bar opens **Settings**, a sheet from the right. It lists the library folders with their asset counts. Add folder opens the system's folder dialog, adds the folder and scans. Rescan all scans every folder, as `uv run capsa scan` does. While a scan runs, a blue line travels along the bottom of the title bar. `Esc` closes the sheet.
 
-Typing in the search box narrows the grid and the counts. `Ctrl K` jumps to the search box. Clicking a tile selects it; the selection is the blue bar above it. A missing asset shows its name in orange.
+Typing in the search box narrows the grid and the counts. `Ctrl K` jumps to the search box. Clicking a tile selects it; the selection is the blue bar above it. The star on a tile (shown on hover) or `F` adds the asset to Favourites. `+ tag` or `T` adds a tag; clicking a tag removes it. A missing asset shows its name in orange.
 
 ## Two halves
 
@@ -35,7 +35,7 @@ That line runs `Api.search("metal")` in Python and waits for the answer: a list 
 
 These calls do not go over the network. pywebview does start a small web server on `127.0.0.1` to hand WebView2 the three page files; Capsa has no server of its own. The page cannot reach anything `Api` does not offer.
 
-`Api` has nine methods: `search`, `thumbnail`, `show_in_explorer`, `folders`, `add_folder`, `rescan`, `minimize`, `toggle_maximize` and `close`.
+`Api` has twelve methods: `search`, `thumbnail`, `show_in_explorer`, `set_favourite`, `add_tag`, `remove_tag`, `folders`, `add_folder`, `rescan`, `minimize`, `toggle_maximize` and `close`.
 
 pywebview runs every call in a thread of its own. A scan can take a while, and the window stays usable meanwhile: the page only waits for the answer of `rescan` to hide the scan line and fetch the assets again. Thumbnails that are still loading wait until the scan ends: both make thumbnails, and two threads writing the same file at once would clash. A lock (`threading.Lock`) lets one in at a time.
 
@@ -59,6 +59,6 @@ The window is **frameless**: Windows draws no title bar, Capsa draws its own. Dr
 
 - The scan line shows that a scan runs, not how far it is.
 - Sort, tile size and list or grid are forgotten when the window closes.
-- No favourites, tags or collections.
+- No collections.
 - The font is a placeholder: IBM Plex if installed, otherwise Segoe UI (#12).
 - Maximise is tracked by the button alone: double-clicking the title bar or snapping the window does not update it.
