@@ -88,10 +88,18 @@ nav .number { font: 11px var(--mono); }
 nav li.bad button { color: var(--fault); }
 
 main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
-.head { display: flex; align-items: baseline; gap: 12px; height: 72px; padding-top: 24px; }
+.head { display: flex; align-items: center; gap: 12px; height: 72px; }
 .head h1 { margin: 0; font-size: 20px; font-weight: 300; }
 .count { font: 11px var(--mono); color: var(--mid); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 30px 16px; }
+.tools { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.tools input[type="range"] { width: 90px; accent-color: var(--ink); }
+.tools input[hidden] { display: none; }
+.tool { width: 30px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line2); color: var(--mid); }
+.tool:hover { color: var(--ink); border-color: var(--mid); }
+.tools select { height: 28px; padding: 0 6px; background: var(--ground); color: var(--mid); border: 1px solid var(--line2); font: inherit; }
+.tools select:hover { color: var(--ink); border-color: var(--mid); }
+
+.grid { --tile-size: 160px; display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--tile-size), 1fr)); gap: 30px 16px; }
 .tile { display: flex; flex-direction: column; gap: 8px; min-width: 0; text-align: left; }
 .tile .picture { position: relative; aspect-ratio: 1; background: var(--tile) center / cover no-repeat; }
 /* The selection lid: a blue bar lifted one gap above the picture, as on the mark. */
@@ -99,7 +107,17 @@ main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .tile .picture.on::before { opacity: 1; }
 .tile .name { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .kind { margin-top: -6px; font-size: 11.5px; color: var(--low); }
+.tile .size { display: none; }
 .tile.missing .name, .tile.missing .kind { color: var(--fault); }
+
+/* List: one row per asset with a small picture, and the size shown. */
+.grid.list { grid-template-columns: 1fr; gap: 0; }
+.grid.list .tile { flex-direction: row; align-items: center; gap: 14px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.grid.list .picture { width: 34px; flex: 0 0 34px; }
+.grid.list .picture::before { top: 0; bottom: 0; left: -12px; right: auto; width: 3px; height: auto; }
+.grid.list .name { flex: 1; }
+.grid.list .kind { margin: 0; width: 110px; }
+.grid.list .size { display: block; width: 80px; text-align: right; font: 11px var(--mono); color: var(--low); }
 
 .details { border-left: 1px solid var(--line); padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow: auto; }
 .details > * { flex-shrink: 0; }

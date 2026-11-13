@@ -16,6 +16,15 @@ const GROUPS = [
   ["caches", "Caches", ["cache"]],
 ];
 
+// Recent is the newest file first: the index keeps no date of when Capsa first saw an asset.
+const SORTS = {
+  recent: (a, b) => b.modified - a.modified,
+  name: (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }),
+  size: (a, b) => b.size - a.size,
+};
+const GRID_ICON = '<svg class="icon" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="4.5" height="4.5"/><rect x="9" y="2.5" width="4.5" height="4.5"/><rect x="2.5" y="9" width="4.5" height="4.5"/><rect x="9" y="9" width="4.5" height="4.5"/></svg>';
+const LIST_ICON = '<svg class="icon" viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg>';
+
 const nav = document.getElementById("nav");
 const grid = document.getElementById("grid");
 const count = document.getElementById("count");
@@ -27,6 +36,8 @@ const toast = document.getElementById("toast");
 let assets = []; // the answer to the last search
 let group = "all";
 let selected = null; // path of the selected asset
+let order = "recent";
+let list = false; // list rows instead of the grid
 let drawn = 0; // which drawing the tiles belong to, so an old thumbnail loop stops
 const thumbnails = new Map(); // cover path -> data URL, or null when it cannot be read
 
@@ -52,7 +63,7 @@ async function find(text) {
 
 function draw() {
   const ask = ++drawn;
-  const visible = assets.filter((a) => inGroup(a, group));
+  const visible = assets.filter((a) => inGroup(a, group)).sort(SORTS[order]);
   if (!visible.some((a) => a.path === selected)) selected = visible.length ? visible[0].path : null;
   drawNav();
   title.textContent = label(group);
@@ -109,7 +120,10 @@ function tile(asset) {
   const kind = document.createElement("span");
   kind.className = "kind";
   kind.textContent = asset.missing ? "Missing" : KINDS[asset.kind];
-  element.append(picture, name, kind);
+  const bytes = document.createElement("span");
+  bytes.className = "size";
+  bytes.textContent = size(asset.size);
+  element.append(picture, name, kind, bytes);
   return element;
 }
 
@@ -216,6 +230,23 @@ function select(path) {
   }
   drawDetails();
 }
+
+const layout = document.getElementById("layout");
+const tileSize = document.getElementById("tile-size");
+function setLayout(asList) {
+  list = asList;
+  grid.classList.toggle("list", list);
+  tileSize.hidden = list;
+  layout.innerHTML = list ? GRID_ICON : LIST_ICON;
+  layout.setAttribute("aria-label", list ? "Switch to grid" : "Switch to list");
+}
+layout.onclick = () => setLayout(!list);
+tileSize.oninput = () => grid.style.setProperty("--tile-size", `${tileSize.value}px`);
+document.getElementById("sort").onchange = (event) => {
+  order = event.target.value;
+  draw();
+};
+setLayout(false);
 
 nav.addEventListener("click", (event) => {
   const button = event.target.closest("[data-group]");
