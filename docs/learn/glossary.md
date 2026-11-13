@@ -8,6 +8,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **Cache:** files Capsa made and can make again, kept so the work is done once. Deleting the cache loses nothing.
 
+**Catalogue:** Capsa's main view: the sidebar of groups, the grid of tiles and the details of the selected asset.
+
 **Cover:** the picture shown on an asset's tile.
 
 **Command line:** a program you run by typing its name and some words in a terminal, such as `capsa scan`. No window.
@@ -59,3 +61,5 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 **uv:** the tool that installs Python, creates the project's private environment (`.venv`) and runs commands inside it. `uv run pytest` means "run pytest with exactly this project's dependencies".
 
 **Virtual environment (`.venv`):** a private copy of Python's installed packages for one project, so two projects cannot break each other. It is rebuilt from the lockfile and never committed.
+
+**xdg-open:** the Linux command that opens a file or folder with the program the desktop chose for it.

@@ -1,4 +1,6 @@
 import base64
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -31,11 +33,14 @@ def api_for(tmp_path: Path) -> Api:
 
 def test_search_gives_the_page_plain_values(tmp_path):
     chair, sky = api_for(tmp_path).search("")
+    source = tmp_path / "library" / "chair.obj"
     assert chair == {
         "name": "chair",
         "kind": "obj",
-        "path": str(tmp_path / "library" / "chair.obj"),
+        "path": str(source),
         "cover": None,
+        "size": 0,
+        "modified": source.stat().st_mtime,
         "missing": False,
     }
     assert sky["kind"] == "hdri"
@@ -59,3 +64,20 @@ def test_unreadable_cover_gives_no_thumbnail(tmp_path):
 def test_page_files_ship_with_the_package():
     for name in ("index.html", "style.css", "app.js"):
         assert (PAGE.parent / name).is_file()
+
+
+def test_explorer_on_windows_selects_the_file(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(subprocess, "Popen", calls.append)
+    Api(tmp_path).show_in_explorer(r"D:\Work\Library\my sky.exr")
+    # Quotes around the path only: Explorer ignores a quoted "/select,...".
+    assert calls == [r'explorer /select,"D:\Work\Library\my sky.exr"']
+
+
+def test_explorer_on_linux_opens_the_folder(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(subprocess, "Popen", calls.append)
+    Api(tmp_path).show_in_explorer(str(tmp_path / "sky.exr"))
+    assert calls == [["xdg-open", str(tmp_path)]]

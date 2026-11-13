@@ -6,6 +6,8 @@ No web server of our own: pywebview passes the calls between JavaScript and Pyth
 """
 
 import base64
+import subprocess
+import sys
 from pathlib import Path
 
 import webview
@@ -34,6 +36,8 @@ class Api:
                     "kind": asset.kind.value,
                     "path": str(asset.path),
                     "cover": str(asset.cover) if asset.cover else None,
+                    "size": asset.size_bytes,
+                    "modified": asset.modified_time,
                     "missing": asset.missing,
                 }
                 for asset in index.search(text)
@@ -47,6 +51,15 @@ class Api:
         if path is None:
             return None
         return "data:image/jpeg;base64," + base64.b64encode(path.read_bytes()).decode()
+
+    def show_in_explorer(self, path: str) -> None:
+        """Open the folder that holds `path` in the system file manager."""
+        if sys.platform == "win32":
+            # A string, not a list: list quoting would wrap "/select,..." in quotes,
+            # and Explorer only accepts the quotes around the path.
+            subprocess.Popen(f'explorer /select,"{path}"')
+        else:
+            subprocess.Popen(["xdg-open", str(Path(path).parent)])
 
     def minimize(self) -> None:
         self._window.minimize()

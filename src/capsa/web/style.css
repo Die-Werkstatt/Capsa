@@ -65,14 +65,50 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .controls button:hover { background: var(--tile); color: var(--ink); }
 .controls .close:hover { background: var(--close); }
 
-/* Grid */
-main { flex: 1; min-height: 0; overflow: auto; padding: 0 28px 28px; }
+/* Catalogue: sidebar, grid, details */
+.catalogue { flex: 1; min-height: 0; display: grid; grid-template-columns: 212px 1fr 304px; }
+
+nav { padding: 22px 0 22px 28px; display: flex; flex-direction: column; gap: 22px; border-right: 1px solid var(--line); overflow: auto; }
+nav .section { display: flex; flex-direction: column; gap: 6px; }
+nav .caption { font-size: 12px; color: var(--mid); }
+nav ul { list-style: none; margin: 0; padding: 0; }
+nav li button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 5px 20px 5px 0; color: var(--mid); }
+nav li button:hover, nav li.on button { color: var(--ink); }
+nav li b { font-weight: 400; }
+nav li.on b { border-left: 2px solid var(--lid); margin-left: -12px; padding-left: 10px; }
+nav .number { font: 11px var(--mono); }
+nav li.bad button { color: var(--fault); }
+
+main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
 .head { display: flex; align-items: baseline; gap: 12px; height: 72px; padding-top: 24px; }
 .head h1 { margin: 0; font-size: 20px; font-weight: 300; }
 .count { font: 11px var(--mono); color: var(--mid); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 30px 16px; }
-.tile { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.tile .picture { aspect-ratio: 1; background: var(--tile) center / cover no-repeat; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 30px 16px; }
+.tile { display: flex; flex-direction: column; gap: 8px; min-width: 0; text-align: left; }
+.tile .picture { position: relative; aspect-ratio: 1; background: var(--tile) center / cover no-repeat; }
+/* The selection lid: a blue bar lifted one gap above the picture, as on the mark. */
+.tile .picture::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 4px; background: var(--lid); opacity: 0; transition: opacity .12s; }
+.tile .picture.on::before { opacity: 1; }
 .tile .name { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .kind { margin-top: -6px; font-size: 11.5px; color: var(--low); }
 .tile.missing .name, .tile.missing .kind { color: var(--fault); }
+
+.details { border-left: 1px solid var(--line); padding: 22px 28px; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow: auto; }
+.details > * { flex-shrink: 0; }
+.details .preview { height: 180px; background: var(--tile) center / contain no-repeat; }
+.details .big-name { font-size: 17px; font-weight: 300; overflow-wrap: anywhere; user-select: text; }
+.rows { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.rows span { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.rows span:nth-child(odd) { color: var(--mid); }
+.rows span:nth-child(even) { font: 11.5px var(--mono); text-align: right; padding-left: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rows span:nth-last-child(-n+2) { border-bottom: 0; }
+.rows .bad { color: var(--fault); }
+.actions { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.action { height: 34px; padding: 0 10px; border: 1px solid var(--line2); font-size: 12.5px; white-space: nowrap; text-align: center; }
+.action:hover { border-color: var(--mid); }
+.action.primary { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.action:disabled { color: var(--low); border-color: var(--line); cursor: default; }
+.none { color: var(--low); margin: auto 0; text-align: center; }
+
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: 700px; padding: 8px 14px; background: var(--ink); color: var(--ground); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; opacity: 0; transition: opacity .15s; }
+.toast.on { opacity: 1; }

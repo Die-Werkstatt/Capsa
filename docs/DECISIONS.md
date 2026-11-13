@@ -91,6 +91,11 @@ One entry per non-obvious choice. Newest at the bottom.
 
 ## 2026-11-13: The window talks to Python through pywebview, in plain JavaScript
 **Decision:** The page calls Python through pywebview's JS API (`window.Api`, `pywebview.api.<name>` in JavaScript). No FastAPI, no React, no build step. Thumbnails reach the page as data URLs. Sandro chose this on 2026-11-13 (#7).
-**Why:** pywebview's docs: the JS API "allows communication between Python and Javascript domains without a web server". One process, no port, no CSRF protection to get right, and every file of the page is readable as it is.
+**Why:** pywebview's docs: the JS API "allows communication between Python and Javascript domains without a web server". One process, no API server (pywebview only serves the page files on `127.0.0.1`), no CSRF protection to get right, and every file of the page is readable as it is.
 **Alternatives:** FastAPI + plain JavaScript: an HTTP API a Houdini panel could reuse, at the cost of a server and CSRF protection. FastAPI + React: the brief's first plan; adds a JavaScript build and React to learn before the first grid.
 **Trade-off:** A Houdini panel cannot call the window; it would read the SQLite index itself. Each thumbnail travels as Base64 text, about a third larger than the file. Each call opens its own index connection, because pywebview runs calls in separate threads.
+
+## 2026-11-13: The sidebar shows Materials as a group of its own
+**Decision:** Library in the sidebar lists All, Models, Materials, Textures, HDRIs and Caches. Image sequences count as Textures. Missing files appears under Needs attention only when an asset is missing. The page sorts the assets into groups itself from the answer to `search("")`.
+**Why:** Most of Sandro's library is ambientCG materials (#11). The design lists no Materials group, and putting them under Textures would hide them among single images.
+**Alternatives:** The design's list without Materials. One group per kind: eleven entries, most of them empty.
