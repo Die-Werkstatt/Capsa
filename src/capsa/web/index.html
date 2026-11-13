@@ -35,7 +35,18 @@
 <div class="catalogue">
   <nav id="nav"></nav>
   <main>
-    <div class="head"><h1 id="title">All</h1><span id="count" class="count"></span></div>
+    <div class="head">
+      <h1 id="title">All</h1><span id="count" class="count"></span>
+      <div class="tools">
+        <input id="tile-size" type="range" min="100" max="260" step="20" value="160" aria-label="Thumbnail size">
+        <button id="layout" class="tool" type="button" aria-label="Switch to list"></button>
+        <select id="sort" aria-label="Sort">
+          <option value="recent">Recent</option>
+          <option value="name">Name</option>
+          <option value="size">Size</option>
+        </select>
+      </div>
+    </div>
     <div id="grid" class="grid"></div>
   </main>
   <aside id="details" class="details"></aside>

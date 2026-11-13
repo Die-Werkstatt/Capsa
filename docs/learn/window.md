@@ -7,7 +7,7 @@
 `uv run capsa` with no command opens Capsa's window, the **catalogue**. It has a title bar with the search box and three columns:
 
 - **Sidebar:** groups of assets with their counts. Library holds All, Models, Materials, Textures (sequences included), HDRIs and Caches. Needs attention holds Missing files, shown only when an asset is missing.
-- **Grid:** the assets of the chosen group as tiles with thumbnail, name and kind.
+- **Grid:** the assets of the chosen group as tiles with thumbnail, name and kind. Above it: a slider for the tile size, a button that switches to a list (one row per asset, with its size) and back, and the sort order. Recent puts the newest file first, Name sorts by name with numbers in number order (`metal_2` before `metal_10`), Size puts the largest first.
 - **Details:** the selected asset: preview, name, type, size, date and path, then Copy path and Show in Explorer.
 
 The gear in the title bar opens **Settings**, a sheet from the right. It lists the library folders with their asset counts. Add folder opens the system's folder dialog, adds the folder and scans. Rescan all scans every folder, as `uv run capsa scan` does. While a scan runs, a blue line travels along the bottom of the title bar. `Esc` closes the sheet.
@@ -58,7 +58,7 @@ The window is **frameless**: Windows draws no title bar, Capsa draws its own. Dr
 ## What it does not do yet
 
 - The scan line shows that a scan runs, not how far it is.
-- No sort, thumbnail size or list view.
+- Sort, tile size and list or grid are forgotten when the window closes.
 - No favourites, tags or collections.
 - The font is a placeholder: IBM Plex if installed, otherwise Segoe UI (#12).
 - Maximise is tracked by the button alone: double-clicking the title bar or snapping the window does not update it.
