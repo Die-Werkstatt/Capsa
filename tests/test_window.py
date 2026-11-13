@@ -42,6 +42,8 @@ def test_search_gives_the_page_plain_values(tmp_path):
         "size": 0,
         "modified": source.stat().st_mtime,
         "missing": False,
+        "favourite": False,
+        "tags": [],
     }
     assert sky["kind"] == "hdri"
 
@@ -119,3 +121,15 @@ def test_folder_holding_the_index_is_refused(tmp_path):
     api = api_for(tmp_path)
     api._window = FolderDialog(tmp_path)
     assert "lies inside" in api.add_folder()["error"]
+
+
+def test_tags_come_back_as_the_index_spells_them(tmp_path):
+    api = api_for(tmp_path)
+    chair = str(tmp_path / "library" / "chair.obj")
+    assert api.add_tag(chair, " Wood ") == ["wood"]
+    assert api.add_tag(chair, "Dining  Room") == ["dining room", "wood"]
+    assert api.remove_tag(chair, "wood") == ["dining room"]
+    api.set_favourite(chair, True)
+    (found,) = api.search("dining")
+    assert found["favourite"]
+    assert found["tags"] == ["dining room"]

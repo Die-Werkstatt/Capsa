@@ -43,9 +43,35 @@ class Api:
                     "size": asset.size_bytes,
                     "modified": asset.modified_time,
                     "missing": asset.missing,
+                    "favourite": asset.favourite,
+                    "tags": list(asset.tags),
                 }
                 for asset in index.search(text)
             ]
+        finally:
+            index.close()
+
+    def set_favourite(self, path: str, favourite: bool) -> None:
+        index = Index(self._data / INDEX_NAME)
+        try:
+            index.set_favourite(Path(path), favourite)
+        finally:
+            index.close()
+
+    def add_tag(self, path: str, tag: str) -> list[str]:
+        """Tag an asset. Returns all its tags, as the index spells them."""
+        index = Index(self._data / INDEX_NAME)
+        try:
+            index.add_tag(Path(path), tag)
+            return index.tags(Path(path))
+        finally:
+            index.close()
+
+    def remove_tag(self, path: str, tag: str) -> list[str]:
+        index = Index(self._data / INDEX_NAME)
+        try:
+            index.remove_tag(Path(path), tag)
+            return index.tags(Path(path))
         finally:
             index.close()
 

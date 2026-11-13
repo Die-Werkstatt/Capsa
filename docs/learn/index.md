@@ -10,14 +10,16 @@ Searching looks in the index, not on the drives. That is the difference between 
 
 ## What is inside
 
-Four tables. Think of each as a spreadsheet.
+Six tables. Think of each as a spreadsheet.
 
 | Table | One row is | Columns |
 |---|---|---|
 | `roots` | a library root | its path |
 | `assets` | an asset, as `assets.py` grouped it | which root, path, name, kind, cover, missing or not |
 | `files` | a file that belongs to an asset | which asset, path, size, date, kind |
-| `assets_search` | the same asset, prepared for searching | its path, cut into words |
+| `assets_search` | the same asset, prepared for searching | its path and its tags, cut into words |
+| `favourites` | an asset you starred | which root, path |
+| `tags` | one tag on one asset | which root, path, tag |
 
 Paths are stored relative to the root, so `materials/metal/metal_053B`, not `D:\Work\Library\materials\...`.
 
@@ -43,6 +45,14 @@ The search table cuts every path into words wherever there is something that is 
 
 This is SQLite's full-text search, called FTS5. It works like the index at the back of a book: it looks up the word and gets the pages, without reading the book.
 
+## Favourites and tags
+
+`set_favourite(path, True)` stars an asset, `add_tag(path, "wood")` and `remove_tag(path, "wood")` tag it. Tags are stored in lower case with single spaces, so `Dining  Room` becomes `dining room`.
+
+These are the only things in the index you make by hand: a rescan can build everything else again, but not them. So `favourites` and `tags` are not tied to an asset's row. They name the root and the path. When a rescan forgets an asset, its star and tags stay, and they are back as soon as an asset with that path is.
+
+A tag is also written into `assets_search` beside the path, so `search("wood")` finds assets tagged wood.
+
 ## How data flows
 
 ```
@@ -54,7 +64,7 @@ scan(root).files ──► group ──► index.update ──► assets + files
 ## Safety
 
 - `add_root` refuses a root that contains the index file itself. Capsa's data must not end up in your library.
-- The index has a version number, now 2. Capsa refuses a file of another version with a clear message. Nothing converts an old file yet: delete it and scan again.
+- The index has a version number, now 3. A file of version 2 is upgraded when Capsa opens it: the two new tables are added and the search table is built again, because an FTS5 table cannot gain a column. Nothing is rescanned. Capsa refuses a file of any other version with a clear message.
 
 ## Try it
 

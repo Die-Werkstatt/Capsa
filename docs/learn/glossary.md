@@ -52,6 +52,8 @@ Every technical term used in Capsa, in plain language. Alphabetical.
 
 **SQLite:** a database that is a single file and needs no server. It comes with Python.
 
+**Schema version:** the number an index file carries for the shape of its tables. When the shape changes, the number goes up, and Capsa upgrades an older file when it opens it.
+
 **Suffix:** the end of a file name that says what the file is, such as `.usd` or `.bgeo.sc`.
 
 **Table:** one spreadsheet inside a database: named columns, one row per thing.
