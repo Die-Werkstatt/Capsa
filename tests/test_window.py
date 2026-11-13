@@ -81,3 +81,41 @@ def test_explorer_on_linux_opens_the_folder(tmp_path, monkeypatch):
     monkeypatch.setattr(subprocess, "Popen", calls.append)
     Api(tmp_path).show_in_explorer(str(tmp_path / "sky.exr"))
     assert calls == [["xdg-open", str(tmp_path)]]
+
+
+class FolderDialog:
+    """Stands in for the pywebview window: its folder dialog answers `chosen`."""
+
+    def __init__(self, chosen: Path | None) -> None:
+        self.chosen = chosen
+
+    def create_file_dialog(self, dialog_type):
+        return (str(self.chosen),) if self.chosen else None
+
+
+def test_folders_count_the_assets_of_each_root(tmp_path):
+    assert api_for(tmp_path).folders() == [{"path": str(tmp_path / "library"), "assets": 2}]
+
+
+def test_added_folder_is_found_by_rescan(tmp_path):
+    api = api_for(tmp_path)
+    second = tmp_path / "second"
+    second.mkdir()
+    (second / "table.fbx").write_bytes(b"")
+    api._window = FolderDialog(second)
+    assert api.add_folder() == {"added": str(second)}
+    api.rescan()
+    assert [a["name"] for a in api.search("")] == ["chair", "sky", "table"]
+
+
+def test_cancelled_dialog_adds_nothing(tmp_path):
+    api = api_for(tmp_path)
+    api._window = FolderDialog(None)
+    assert api.add_folder() is None
+    assert len(api.folders()) == 1
+
+
+def test_folder_holding_the_index_is_refused(tmp_path):
+    api = api_for(tmp_path)
+    api._window = FolderDialog(tmp_path)
+    assert "lies inside" in api.add_folder()["error"]

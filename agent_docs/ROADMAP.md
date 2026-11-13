@@ -16,7 +16,7 @@ Decisions and checks that the first features wait for.
 
 Phase 1, one pull request per item, in this order.
 
-- [ ] Catalogue: settings sheet with library folders, Add folder and Rescan all (#17)
+- [ ] Catalogue: sort, thumbnail size, grid or list (#17)
 - [ ] Favourites, tags and collections
 - [ ] Keep the index current when files change (#18)
 - [ ] Tell an HDRI from another `.exr` by its shape (#29)

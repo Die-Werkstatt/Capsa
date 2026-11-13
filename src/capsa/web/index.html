@@ -25,10 +25,12 @@
     <kbd>Ctrl K</kbd>
   </label>
   <div class="controls">
+    <button id="settings" class="settings" type="button" aria-label="Settings"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><circle cx="8" cy="8" r="4.7"/><path d="M8 1v2.3M8 12.7V15M1 8h2.3M12.7 8H15M3 3l1.7 1.7M11.3 11.3L13 13M3 13l1.7-1.7M11.3 4.7L13 3"/></svg></button>
     <button id="minimize" type="button" aria-label="Minimise"><svg class="icon" viewBox="0 0 16 16"><path d="M3.5 8h9"/></svg></button>
     <button id="maximize" type="button" aria-label="Maximise"><svg class="icon" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9"/></svg></button>
     <button id="close" class="close" type="button" aria-label="Close"><svg class="icon" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
   </div>
+  <div id="progress" class="progress"></div>
 </header>
 <div class="catalogue">
   <nav id="nav"></nav>
@@ -38,6 +40,19 @@
   </main>
   <aside id="details" class="details"></aside>
 </div>
+<aside id="sheet" class="sheet" hidden>
+  <div class="sheet-head"><h2>Settings</h2><button id="sheet-close" type="button" aria-label="Close settings"><svg class="icon" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+  <section>
+    <h3>Library folders</h3>
+    <div id="folders"></div>
+    <button id="add-folder" class="link" type="button"><svg class="icon" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Add folder</button>
+  </section>
+  <section>
+    <h3>Index</h3>
+    <div class="rows"><span>Assets</span><span id="asset-count"></span></div>
+    <button id="rescan" class="link" type="button">Rescan all</button>
+  </section>
+</aside>
 <div id="toast" class="toast"></div>
 <script src="app.js"></script>
 </body>

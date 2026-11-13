@@ -10,6 +10,8 @@
 - **Grid:** the assets of the chosen group as tiles with thumbnail, name and kind.
 - **Details:** the selected asset: preview, name, type, size, date and path, then Copy path and Show in Explorer.
 
+The gear in the title bar opens **Settings**, a sheet from the right. It lists the library folders with their asset counts. Add folder opens the system's folder dialog, adds the folder and scans. Rescan all scans every folder, as `uv run capsa scan` does. While a scan runs, a blue line travels along the bottom of the title bar. `Esc` closes the sheet.
+
 Typing in the search box narrows the grid and the counts. `Ctrl K` jumps to the search box. Clicking a tile selects it; the selection is the blue bar above it. A missing asset shows its name in orange.
 
 ## Two halves
@@ -33,7 +35,9 @@ That line runs `Api.search("metal")` in Python and waits for the answer: a list 
 
 These calls do not go over the network. pywebview does start a small web server on `127.0.0.1` to hand WebView2 the three page files; Capsa has no server of its own. The page cannot reach anything `Api` does not offer.
 
-`Api` has six methods: `search`, `thumbnail`, `show_in_explorer`, `minimize`, `toggle_maximize` and `close`.
+`Api` has nine methods: `search`, `thumbnail`, `show_in_explorer`, `folders`, `add_folder`, `rescan`, `minimize`, `toggle_maximize` and `close`.
+
+pywebview runs every call in a thread of its own. A scan can take a while, and the window stays usable meanwhile: the page only waits for the answer of `rescan` to hide the scan line and fetch the assets again. Thumbnails that are still loading wait until the scan ends: both make thumbnails, and two threads writing the same file at once would clash. A lock (`threading.Lock`) lets one in at a time.
 
 The sidebar needs no method of its own. `search("")` already gives every asset with its kind, and `app.js` sorts them into groups and counts them.
 
@@ -53,7 +57,8 @@ The window is **frameless**: Windows draws no title bar, Capsa draws its own. Dr
 
 ## What it does not do yet
 
-- No scanning from the window and no settings. Scan with `uv run capsa scan` and reopen the window.
+- The scan line shows that a scan runs, not how far it is.
+- No sort, thumbnail size or list view.
 - No favourites, tags or collections.
 - The font is a placeholder: IBM Plex if installed, otherwise Segoe UI (#12).
 - Maximise is tracked by the button alone: double-clicking the title bar or snapping the window does not update it.
