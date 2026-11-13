@@ -16,7 +16,7 @@ capsa = "capsa.__main__:main"
 dev = [
     "pytest>=9.2",
     # aislop 0.16.0 runs this exact ruff and skips its Python checks on any other.
-    "ruff==0.16.7",
+    "ruff==0.17.4",
 ]
 
 [build-system]
