@@ -89,7 +89,8 @@ nav li.bad button { color: var(--fault); }
 nav .note { margin-left: 6px; font-size: 10.5px; color: var(--low); }
 nav .link { padding: 5px 0; }
 
-main { min-width: 0; min-height: 0; overflow: auto; padding: 0 28px 28px; }
+/* The scrollbar space is kept when nothing scrolls, so tiles keep their width from group to group. */
+main { min-width: 0; min-height: 0; overflow: auto; scrollbar-gutter: stable; padding: 0 28px 28px; }
 .head { display: flex; align-items: center; gap: 12px; height: 72px; }
 .head h1 { margin: 0; font-size: 20px; font-weight: 300; }
 .count { font: 11px var(--mono); color: var(--mid); }
