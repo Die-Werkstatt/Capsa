@@ -123,19 +123,43 @@ class Changes:
 class Index:
     def __init__(self, path: Path) -> None:
         self.path = path
-        self._db = sqlite3.connect(path)
-        version = self._db.execute("PRAGMA user_version").fetchone()[0]
-        if version == 0:
-            self._create()
-        # An older file is brought up one version at a time, each step all or nothing.
-        while version in UPGRADES:
-            self._db.executescript(
-                f"BEGIN; {UPGRADES[version]} PRAGMA user_version = {version + 1}; COMMIT;"
-            )
-            version += 1
-        if version not in (0, SCHEMA_VERSION):
+        # While the file is prepared, Python adds no BEGIN or COMMIT of its own, not
+        # even around executescript: the BEGIN in _prepare is the only transaction.
+        self._db = sqlite3.connect(path, autocommit=True)
+        try:
+            self._prepare()
+        except BaseException:
             self._db.close()
-            raise RuntimeError(f"{path} is an index of version {version}, not {SCHEMA_VERSION}.")
+            raise
+        self._db.autocommit = sqlite3.LEGACY_TRANSACTION_CONTROL  # Python's default
+
+    def _prepare(self) -> None:
+        """Create a new file, or bring an older one up one version at a time."""
+        if self._version() == SCHEMA_VERSION:
+            return
+        # The window opens the index from several threads at once. IMMEDIATE takes
+        # the write lock before the version is read again: a second opener waits
+        # here, then finds the file the first one finished.
+        self._db.execute("BEGIN IMMEDIATE")
+        try:
+            version = self._version()
+            if version == 0:
+                self._create()
+                version = SCHEMA_VERSION
+            while version in UPGRADES:
+                self._db.executescript(f"{UPGRADES[version]} PRAGMA user_version = {version + 1};")
+                version += 1
+            if version != SCHEMA_VERSION:
+                raise RuntimeError(
+                    f"{self.path} is an index of version {version}, not {SCHEMA_VERSION}."
+                )
+            self._db.execute("COMMIT")
+        except BaseException:
+            self._db.execute("ROLLBACK")
+            raise
+
+    def _version(self) -> int:
+        return self._db.execute("PRAGMA user_version").fetchone()[0]
 
     def _create(self) -> None:
         try:

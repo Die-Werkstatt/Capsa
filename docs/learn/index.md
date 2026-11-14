@@ -69,6 +69,7 @@ scan(root).files ──► group ──► index.update ──► assets + files
 
 - `add_root` refuses a root that contains the index file itself. Capsa's data must not end up in your library.
 - The index has a version number, now 4. An older file is upgraded when Capsa opens it, one version at a time, each step all or nothing. From 2 to 3 the favourites and tags tables are added and the search table is built again, because an FTS5 table cannot gain a column. From 3 to 4 the collection tables are added, and assets already in the index count as found at the moment of the upgrade. Nothing is rescanned. Capsa refuses a file of any other version with a clear message.
+- The window opens the index from several threads at once. The first one to find an old file takes SQLite's write lock (`BEGIN IMMEDIATE`) and upgrades it; the others wait, read the version again and find nothing left to do. Without the lock two threads upgraded at once, and each waited on the other until SQLite gave up with "database is locked".
 - `with Index(path) as index:` closes the file when the block ends, also after an error.
 
 ## Try it

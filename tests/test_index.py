@@ -1,4 +1,5 @@
 import sqlite3
+import threading
 import time
 from pathlib import Path
 
@@ -223,6 +224,33 @@ def test_index_of_version_2_is_upgraded(tmp_path: Path, library: Path):
     index.add_tag(library / "models" / "chair.obj", "wood")
     assert names(index, "wood") == ["chair"]
     index.close()
+    assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone()[0] == 4
+
+
+def test_two_openers_upgrade_an_old_index_once(tmp_path: Path):
+    # The window opens the index from two threads at once (search and collections).
+    path = tmp_path / "index.sqlite"
+    db = sqlite3.connect(path)
+    db.executescript(VERSION_2)
+    db.execute("PRAGMA user_version = 2")
+    db.commit()
+    db.close()
+    start = threading.Barrier(4)
+    errors = []
+
+    def open_index():
+        start.wait()
+        try:
+            Index(path).close()
+        except Exception as error:
+            errors.append(error)
+
+    threads = [threading.Thread(target=open_index) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert errors == []
     assert sqlite3.connect(path).execute("PRAGMA user_version").fetchone()[0] == 4
 
 
