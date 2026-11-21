@@ -6,6 +6,10 @@ is also a learning project: Sandro must be able to explain and extend every
 part without AI. Phase 1 has started: scanner, index, thumbnails, a command
 line and a first window. The brief is `docs/BRIEF.md`.
 
+Rules shared with other projects are in `.claude/rules/`. An agent that does
+not load that directory itself reads `working.md`, `writing.md` and
+`simplicity.md` there before starting.
+
 ## Stack
 
 - Python 3.13, packaged with uv (`pyproject.toml`, `uv.lock`). OpenImageIO
@@ -41,8 +45,7 @@ line and a first window. The brief is `docs/BRIEF.md`.
 
 ## Working rules
 
-- Small steps. Propose a plan before a change that touches more than one
-  module.
+- Small steps.
 - Stay inside the current phase of the brief. Ask before adding anything from
   a later one.
 - Simple, readable code over clever code.
@@ -57,6 +60,9 @@ uv run python3 .claude/suite-check.py   # every health check in .claude/suite.js
 uv run pytest -q                        # unit tests
 uv run capsa scan                       # add <folder>, scan, search <words>
 ```
+
+Before calling a task done, run `python3 .claude/suite-check.py`. A check it
+reports as skipped did not pass.
 
 `uv run` puts the pinned ruff first on the path; without it the aislop check
 is skipped. CI (`.github/workflows/checks.yml`) runs the tests on Windows and
@@ -89,3 +95,4 @@ Check before writing it down.
 
 - Commit secrets, `.env` files or credentials.
 - Edit generated files or lockfiles by hand; regenerate them.
+- Add a dependency without reading `agent_docs/DEPENDENCIES.md`.
