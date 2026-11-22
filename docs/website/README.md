@@ -1,8 +1,10 @@
 # Capsa: Website
 
-One-page site with a hero, features and download. Open `index.html` in a browser; there is no build step.
+One-page site with a hero, the library window, features and download. Open `index.html` in a browser; there is no build step.
 
-A wireframe Capsa box floats over a perspective grid. While you scroll, the lid lifts, assets (models, textures, HDRIs, stages, caches) circle the box, the box comes apart into labelled parts and then closes again at the download section. The highlighted asset type follows the cycling word in the title.
+A wireframe Capsa box floats over a perspective grid with your assets circling it. It scrolls away with the hero and comes back at the download section, where the lid closes. The asset type named in the title is drawn larger. The library section draws the Capsa window in line art.
+
+Blue is used only where the app uses it: the lids and the selected tile.
 
 ## Hosting on Cloudflare Pages
 
@@ -19,11 +21,9 @@ The folder is self-contained, so nothing outside `docs/website` is published.
 ## Dependencies
 
 - three.js r128 from cdnjs
-- Michroma, IBM Plex Sans and JetBrains Mono from Google Fonts
+- Barlow, IBM Plex Sans and IBM Plex Mono from Google Fonts
 
 ## Placeholders
 
-- Houdini minimum version ("20.5 or later")
-- System requirement ("Windows 10 or 11")
-- Download and Source links point to the repository
-- The brief says Capsa is not distributed publicly, so whether the site offers a download is still open
+- Download for Windows is shown as unavailable until there is a build. Run from source links to the README.
+- System requirement ("Windows 11"): the only system Capsa has run on
